@@ -9,7 +9,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from weasyprint import HTML
 from openpyxl import Workbook
-from .models import Booking, Profile
+from .models import ActivityLog, Booking, Profile
 
 # --- PUBLIC VIEWS ---
 
@@ -47,6 +47,7 @@ def dashboard(request):
     total_travelers = bookings.aggregate(Sum('total_members'))['total_members__sum'] or 0
     unpaid_count = bookings.exclude(payment_status='Paid').count()
     companies = Company.objects.all().order_by('name') if request.user.is_superuser else None
+    activities = ActivityLog.objects.filter(company=company)[:10]
 
     context = {
         'bookings': bookings,
@@ -54,6 +55,7 @@ def dashboard(request):
         'unpaid_count': unpaid_count,
         'companies': companies,
         'current_company': company,
+        'activities': activities,
     }
     
     return render(request, 'bookings/dashboard.html', context)
@@ -76,7 +78,7 @@ def switch_company(request):
 @login_required
 def new_booking(request):
     if request.method == 'POST':
-        # 1. Construct Passenger Manifest (JSON) from dynamic inputs
+        # 1. Construct Passenger Manifest
         names = request.POST.getlist('pax_name[]')
         passports = request.POST.getlist('pax_passport[]')
         pans = request.POST.getlist('pax_pan[]')
@@ -84,7 +86,7 @@ def new_booking(request):
         
         manifest = []
         for i in range(len(names)):
-            if names[i].strip(): # Only add if name is not empty
+            if names[i].strip():
                 manifest.append({
                     "name": names[i],
                     "passport": passports[i] if i < len(passports) else "",
@@ -92,46 +94,52 @@ def new_booking(request):
                     "dob": dobs[i] if i < len(dobs) else ""
                 })
 
-        # 2. Helper to handle empty dates safely
         def get_date(key):
             val = request.POST.get(key)
             return val if val else None
 
-        # 3. Create the Booking Record Atomically
-        with transaction.atomic():
-            Booking.objects.create(
-                company=request.user.profile.company,
-                
-                # Receipt Metadata
-                receipt_number=request.POST.get('receipt_number'),
-                booking_date=get_date('booking_date'),
-                cid_number=request.POST.get('cid_number'),
-                
-                # Payer Info
-                customer_name=request.POST.get('customer_name'),
-                contact_mobile=request.POST.get('contact_mobile'),
-                contact_email=request.POST.get('contact_email'),
-                address=request.POST.get('address'),
-                
-                # Passengers
-                total_members=len(manifest),
-                passenger_manifest=manifest, # Saves as JSON
-                
-                # Financials
-                tour_price=request.POST.get('tour_price') or 0,
-                amount_paid=request.POST.get('amount_paid') or 0,
-                payment_mode=request.POST.get('payment_mode'),
-                cheque_number=request.POST.get('cheque_number'),
-                cheque_date=get_date('cheque_date'),
-                payment_stage=request.POST.get('payment_stage'),
-                final_payment_due_date=get_date('final_payment_due_date'),
-                
-                # Status & Extras
-                payment_status='Paid' if request.POST.get('payment_stage') == 'Final' else 'Pending',
-                remarks=request.POST.get('remarks')
-            )
+        # 2. Atomic Transaction for Booking and Pulse Attribution
+        try:
+            with transaction.atomic():
+                # Create the Booking object (This triggers the Signal)
+                booking = Booking.objects.create(
+                    company=request.user.profile.company,
+                    receipt_number=request.POST.get('receipt_number'),
+                    booking_date=get_date('booking_date'),
+                    cid_number=request.POST.get('cid_number'),
+                    customer_name=request.POST.get('customer_name'),
+                    contact_mobile=request.POST.get('contact_mobile'),
+                    contact_email=request.POST.get('contact_email'),
+                    address=request.POST.get('address'),
+                    total_members=len(manifest),
+                    passenger_manifest=manifest, 
+                    tour_price=request.POST.get('tour_price') or 0,
+                    amount_paid=request.POST.get('amount_paid') or 0,
+                    payment_mode=request.POST.get('payment_mode'),
+                    cheque_number=request.POST.get('cheque_number'),
+                    cheque_date=get_date('cheque_date'),
+                    payment_stage=request.POST.get('payment_stage'),
+                    final_payment_due_date=get_date('final_payment_due_date'),
+                    payment_status='Paid' if request.POST.get('payment_stage') == 'Final' else 'Pending',
+                    remarks=request.POST.get('remarks')
+                )
+
+                # 3. Pulse Attribution
+                # Locate the log entry created by the post_save signal
+                latest_log = ActivityLog.objects.filter(
+                    reference_id=booking.booking_id,
+                    company=request.user.profile.company
+                ).first()
+
+                if latest_log:
+                    latest_log.user = request.user
+                    latest_log.save()
             
-        return redirect('dashboard')
+            return redirect('dashboard')
+            
+        except Exception as e:
+            # Handle potential errors (e.g., database integrity issues)
+            return render(request, 'bookings/booking_form.html', {'error': str(e)})
 
     return render(request, 'bookings/booking_form.html')
 
@@ -309,3 +317,4 @@ def add_company(request):
             return HttpResponse(f"Error creating company: {str(e)}", status=400)
 
     return render(request, 'bookings/add_company.html')
+

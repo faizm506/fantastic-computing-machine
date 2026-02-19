@@ -97,3 +97,13 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.booking_id} - {self.customer_name}"
+    
+class ActivityLog(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=255) # e.g., "Created New Booking"
+    reference_id = models.CharField(max_length=100, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']

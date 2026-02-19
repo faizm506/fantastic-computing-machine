@@ -16,6 +16,5 @@ urlpatterns = [
     path('export/excel/', views.export_bookings_csv, name='export_data'),
     path('company/add/', views.add_company, name='add_company'),
 
-
     path('switch-company/', views.switch_company, name='switch_company'),
 ]

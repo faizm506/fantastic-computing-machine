@@ -3,162 +3,90 @@
 
 {% block content %}
 <style>
-    /* --- TOP-TIER INTERFACE STYLING --- */
-    
-    /* 1. Dashboard Header & Switcher */
-    .header-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 40px;
-        gap: 20px;
-    }
-
-    .brand-heading h1 {
-        font-size: 2.4rem;
-        font-weight: 800;
-        letter-spacing: -2px;
-        color: var(--brand-midnight);
-        margin: 0;
-        line-height: 1;
-    }
-
-    /* 2. Enhanced Action Buttons */
-    .action-group { display: flex; gap: 12px; align-items: center; }
-
-    .btn-vanguard {
-        padding: 14px 24px;
-        border-radius: 16px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-decoration: none;
-    }
-
-    .btn-vanguard-primary {
-        background: var(--brand-midnight);
-        color: white;
-        box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.2);
-    }
-    .btn-vanguard-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.4);
-        background: #000;
-    }
-
-    .btn-vanguard-secondary {
-        background: white;
-        color: var(--text-main);
-        border: 1px solid #e2e8f0;
-    }
-    .btn-vanguard-secondary:hover { background: var(--bg-canvas); border-color: var(--brand-midnight); }
-
-    /* 3. Workspace Switcher Glassmorphism */
-    .workspace-switcher {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        border: 1px solid #e2e8f0;
-        padding: 6px 6px 6px 18px;
-        border-radius: 18px;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    }
-
-    /* 4. Stats Cards (Insight Pills) */
-    .stats-container {
+    /* --- DASHBOARD ARCHITECTURE --- */
+    .dashboard-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 25px;
-        margin-bottom: 40px;
+        grid-template-columns: 1fr 340px;
+        gap: 30px;
+        align-items: start;
     }
 
-    .insight-card {
-        background: white;
-        padding: 30px;
-        border-radius: 28px;
-        border: 1px solid #f1f5f9;
+    /* --- PULSE FEED STYLING --- */
+    .pulse-container {
+        position: sticky;
+        top: 20px;
+    }
+
+    .pulse-item {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
         position: relative;
-        overflow: hidden;
     }
 
-    .insight-card::before {
-        content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%;
+    /* Timeline connector line */
+    .pulse-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 6px;
+        top: 24px;
+        width: 2px;
+        height: calc(100% - 10px);
+        background: #f1f5f9;
     }
+
+    .pulse-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid var(--brand-accent);
+        flex-shrink: 0;
+        z-index: 2;
+        margin-top: 4px;
+    }
+
+    .pulse-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pulse-action {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--brand-midnight);
+        line-height: 1.4;
+    }
+
+    .pulse-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    /* --- REUSED TOP-TIER STYLES --- */
+    .header-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; gap: 20px; }
+    .brand-heading h1 { font-size: 2.4rem; font-weight: 800; letter-spacing: -2px; color: var(--brand-midnight); margin: 0; }
+    .action-group { display: flex; gap: 12px; align-items: center; }
+    .btn-vanguard { padding: 14px 24px; border-radius: 16px; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; text-decoration: none; transition: all 0.3s; }
+    .btn-vanguard-primary { background: var(--brand-midnight); color: white; box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.2); }
+    .btn-vanguard-secondary { background: white; color: var(--text-main); border: 1px solid #e2e8f0; }
+    .workspace-switcher { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid #e2e8f0; padding: 6px 6px 6px 18px; border-radius: 18px; display: flex; align-items: center; }
+    .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 40px; }
+    .insight-card { background: white; padding: 30px; border-radius: 28px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
+    .insight-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; }
     .card-blue::before { background: var(--brand-accent); }
     .card-red::before { background: #ef4444; }
-
-    .insight-label {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        font-weight: 800;
-        color: var(--text-muted);
-        letter-spacing: 1px;
-    }
-
-    .insight-value {
-        font-size: 2rem;
-        font-weight: 800;
-        color: var(--brand-midnight);
-        margin-top: 5px;
-    }
-
-    /* 5. Modern Data Grid */
-    .data-grid-container {
-        background: white;
-        border-radius: 32px;
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.03);
-    }
-
+    .insight-value { font-size: 2rem; font-weight: 800; color: var(--brand-midnight); }
+    .data-grid-container { background: white; border-radius: 32px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.03); }
     .vanguard-table { width: 100%; border-collapse: collapse; }
-    .vanguard-table th {
-        background: #f8fafc;
-        padding: 20px 24px;
-        text-align: left;
-        font-size: 0.7rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        color: #94a3b8;
-        letter-spacing: 1px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .vanguard-table td {
-        padding: 24px;
-        border-bottom: 1px solid #f8fafc;
-        vertical-align: middle;
-    }
-
-    .pax-count {
-        background: var(--brand-soft);
-        color: var(--brand-accent);
-        padding: 6px 12px;
-        border-radius: 10px;
-        font-weight: 800;
-        font-size: 0.8rem;
-    }
-
-    .status-pill {
-        font-size: 0.7rem;
-        font-weight: 800;
-        padding: 6px 14px;
-        border-radius: 50px;
-        text-transform: uppercase;
-    }
+    .vanguard-table th { background: #f8fafc; padding: 20px 24px; text-align: left; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+    .vanguard-table td { padding: 24px; border-bottom: 1px solid #f8fafc; }
+    .status-pill { font-size: 0.7rem; font-weight: 800; padding: 6px 14px; border-radius: 50px; text-transform: uppercase; }
     .status-paid { background: #dcfce7; color: #15803d; }
     .status-pending { background: #fef2f2; color: #b91c1c; }
 
-    @media (max-width: 1024px) {
-        .header-section { flex-direction: column; align-items: flex-start; }
-    }
+    @media (max-width: 1200px) { .dashboard-grid { grid-template-columns: 1fr; } .pulse-container { position: static; } }
 </style>
 
 <div id="dashboard-container">
@@ -196,7 +124,7 @@
     <div class="stats-container">
         <div class="insight-card card-blue">
             <div>
-                <span class="insight-label">Manifest Load</span>
+                <span style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: var(--text-muted); letter-spacing: 1px;">Manifest Load</span>
                 <div class="insight-value">{{ total_travelers|default:"0" }} <small style="font-size: 0.9rem; color: #94a3b8;">PAX</small></div>
             </div>
             <i class="fas fa-users-rays" style="font-size: 2.5rem; color: #f1f5f9;"></i>
@@ -204,79 +132,100 @@
         
         <div class="insight-card card-red">
             <div>
-                <span class="insight-label">Financial Clearance</span>
+                <span style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: var(--text-muted); letter-spacing: 1px;">Financial Clearance</span>
                 <div class="insight-value">{{ unpaid_count|default:"0" }} <small style="font-size: 0.9rem; color: #94a3b8;">Pending</small></div>
             </div>
             <i class="fas fa-clock-rotate-left" style="font-size: 2.5rem; color: #f1f5f9;"></i>
         </div>
     </div>
 
-    <div style="position: relative; margin-bottom: 35px;">
-        <i class="fas fa-magnifying-glass" style="position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
-        <input type="text" name="search" 
-               placeholder="Search registry by client name, reference ID, or receipt..." 
-               value="{{ request.GET.search }}"
-               hx-get="{% url 'dashboard' %}" 
-               hx-trigger="keyup changed delay:400ms" 
-               hx-target="#dashboard-container" 
-               hx-select="#dashboard-container"
-               hx-push-url="true"
-               style="width: 100%; padding: 20px 20px 20px 65px; border-radius: 20px; border: 1.5px solid #e2e8f0; font-family: inherit; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
-    </div>
+    <div class="dashboard-grid">
+        
+        <div>
+            <div style="position: relative; margin-bottom: 35px;">
+                <i class="fas fa-magnifying-glass" style="position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                <input type="text" name="search" 
+                       placeholder="Search registry by client, reference, or receipt..." 
+                       value="{{ request.GET.search }}"
+                       hx-get="{% url 'dashboard' %}" 
+                       hx-trigger="keyup changed delay:400ms" 
+                       hx-target="#dashboard-container" 
+                       hx-select="#dashboard-container"
+                       hx-push-url="true"
+                       style="width: 100%; padding: 20px 20px 20px 65px; border-radius: 20px; border: 1.5px solid #e2e8f0; font-family: inherit; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+            </div>
 
-    <div class="data-grid-container">
-        <table class="vanguard-table">
-            <thead>
-                <tr>
-                    <th>Log Reference</th>
-                    <th>Client Identity</th>
-                    <th>Load</th>
-                    <th>Financials</th>
-                    <th>Status</th>
-                    <th style="text-align: right;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for b in bookings %}
-                <tr onmouseover="this.style.background='#fcfdfe'" onmouseout="this.style.background='transparent'">
-                    <td>
-                        <div style="font-family: monospace; font-weight: 800; color: var(--brand-accent); font-size: 0.95rem;">#{{ b.booking_id }}</div>
-                        {% if b.receipt_number %}
-                        <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px; font-weight: 700;">REC-{{ b.receipt_number }}</div>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div style="font-weight: 700; color: var(--brand-midnight);">{{ b.customer_name }}</div>
-                        {% if b.contact_mobile %}
-                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">{{ b.contact_mobile }}</div>
-                        {% endif %}
-                    </td>
-                    <td><span class="pax-count">{{ b.total_members }} PAX</span></td>
-                    <td>
-                        <div style="font-weight: 800; color: var(--brand-midnight);">₹{{ b.tour_price }}</div>
-                        <div style="font-size: 0.7rem; color: #10b981; font-weight: 700;">Paid: ₹{{ b.amount_paid }}</div>
-                    </td>
-                    <td>
-                        <span class="status-pill {% if b.payment_status == 'Paid' %}status-paid{% else %}status-pending{% endif %}">
-                            {{ b.payment_status }}
+            <div class="data-grid-container">
+                <table class="vanguard-table">
+                    <thead>
+                        <tr>
+                            <th>Log Reference</th>
+                            <th>Client Identity</th>
+                            <th>Financials</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in bookings %}
+                        <tr onmouseover="this.style.background='#fcfdfe'" onmouseout="this.style.background='transparent'">
+                            <td>
+                                <div style="font-family: monospace; font-weight: 800; color: var(--brand-accent); font-size: 0.95rem;">#{{ b.booking_id }}</div>
+                                {% if b.receipt_number %}
+                                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px; font-weight: 700;">REC-{{ b.receipt_number }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="font-weight: 700; color: var(--brand-midnight);">{{ b.customer_name }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ b.total_members }} PAX</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 800; color: var(--brand-midnight);">₹{{ b.tour_price }}</div>
+                                <div style="font-size: 0.7rem; color: #10b981; font-weight: 700;">Paid: ₹{{ b.amount_paid }}</div>
+                            </td>
+                            <td>
+                                <span class="status-pill {% if b.payment_status == 'Paid' %}status-paid{% else %}status-pending{% endif %}">
+                                    {{ b.payment_status }}
+                                </span>
+                            </td>
+                            <td style="text-align: right;">
+                                <a href="{% url 'booking_detail' b.booking_id %}" style="color: var(--brand-midnight); background: #f1f5f9; padding: 12px; border-radius: 12px; display: inline-flex; text-decoration: none;">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" style="padding: 60px; text-align: center; color: #94a3b8;">No registry entries found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="pulse-container">
+            <div class="vanguard-card" style="padding: 30px;">
+                <h3 style="margin: 0 0 30px 0; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--brand-midnight); display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-satellite-dish" style="color: var(--brand-accent);"></i> System Pulse
+                </h3>
+                
+                {% for log in activities %}
+                <div class="pulse-item">
+                    <div class="pulse-dot"></div>
+                    <div class="pulse-content">
+                        <span class="pulse-action">{{ log.action }}</span>
+                        <span class="pulse-meta">
+                            {{ log.user.username|title }} • {{ log.timestamp|timesince }} ago
                         </span>
-                    </td>
-                    <td style="text-align: right;">
-                        <a href="{% url 'booking_detail' b.booking_id %}" style="color: var(--brand-midnight); background: #f1f5f9; padding: 12px; border-radius: 12px; display: inline-flex; text-decoration: none;">
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </td>
-                </tr>
+                    </div>
+                </div>
                 {% empty %}
-                <tr>
-                    <td colspan="6" style="padding: 100px; text-align: center;">
-                        <i class="fas fa-inbox" style="font-size: 3rem; color: #e2e8f0; display: block; margin-bottom: 20px;"></i>
-                        <span style="font-weight: 700; color: #94a3b8;">No registry entries found.</span>
-                    </td>
-                </tr>
+                <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem;">
+                    Waiting for activity...
+                </div>
                 {% endfor %}
-            </tbody>
-        </table>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}
