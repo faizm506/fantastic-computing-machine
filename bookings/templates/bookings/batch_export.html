@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% block title %}Archive Center{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Card Container */
+    .manager-card {
+        background: white;
+        border-radius: 32px;
+        padding: clamp(24px, 5vw, 45px);
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Filter Form Styling */
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        background: #f8fafc;
+        padding: 30px;
+        border-radius: 24px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 40px;
+    }
+
+    .filter-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1.5px solid #e2e8f0;
+        font-family: inherit;
+        font-weight: 600;
+        color: var(--brand-midnight);
+        background: white;
+        transition: all 0.2s;
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: var(--brand-accent);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Insight Strip */
+    .insight-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .insight-pill {
+        padding: 24px;
+        border-radius: 20px;
+        border: 1px solid transparent;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .pill-blue { background: #eff6ff; border-color: #dbeafe; }
+    .pill-green { background: #f0fdf4; border-color: #dcfce7; }
+
+    .pill-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+    .pill-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--brand-midnight);
+    }
+
+    /* Action Buttons */
+    .action-btn {
+        width: 100%;
+        height: 100%;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: none;
+        cursor: pointer;
+        gap: 10px;
+        font-size: 0.9rem;
+    }
+
+    .btn-filter { background: var(--brand-midnight); color: white; }
+    .btn-filter:hover { background: #000; }
+
+    .btn-zip { background: var(--brand-midnight); color: white; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+    .btn-zip:hover { transform: translateY(-2px); box-shadow: 0 15px 25px -5px rgba(0,0,0,0.3); }
+
+    .btn-excel { background: white; color: var(--brand-midnight); border: 2px solid #e2e8f0; }
+    .btn-excel:hover { border-color: var(--brand-midnight); background: #f8fafc; }
+
+    /* Table Polish */
+    .archive-table th { background: transparent; padding: 15px; border-bottom: 2px solid #e2e8f0; }
+    .archive-table td { padding: 18px 15px; border-bottom: 1px solid #f1f5f9; }
+</style>
+
+<div class="manager-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 style="font-weight: 800; letter-spacing: -1px; margin: 0; font-size: 2rem;">Archive Center</h1>
+        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); background: #f1f5f9; padding: 8px 16px; border-radius: 20px;">
+            Secure Vault Access
+        </span>
+    </div>
+    
+    <form method="GET" id="archive-filter-form" class="filter-grid">
+        <div>
+            <label class="filter-label">Period Start</label>
+            <input type="date" name="from_date" id="from_date" value="{{ from_date }}" required class="filter-input">
+        </div>
+        <div>
+            <label class="filter-label">Period End</label>
+            <input type="date" name="to_date" id="to_date" value="{{ to_date }}" required class="filter-input">
+        </div>
+        <div style="display: flex; align-items: flex-end;">
+            <button type="submit" class="action-btn btn-filter">
+                <i class="fas fa-filter"></i> Apply Date Filter
+            </button>
+        </div>
+    </form>
+
+    <div class="insight-grid">
+        <div class="insight-pill pill-blue">
+            <span class="pill-label" style="color: var(--brand-accent);">Manifest Revenue</span>
+            <div class="pill-value">₹{{ total_revenue|default:"0" }}</div>
+        </div>
+        
+        <div class="insight-pill pill-green">
+            <span class="pill-label" style="color: #16a34a;">Passenger Load</span>
+            <div class="pill-value">{{ total_pax|default:"0" }} <span style="font-size: 1rem; color: #94a3b8;">PAX</span></div>
+        </div>
+
+        <div style="display: flex; gap: 15px; flex-direction: column;">
+            <a href="javascript:void(0)" 
+               id="zip-download-btn"
+               onclick="handleZipDownload(this)"
+               class="action-btn btn-zip">
+                <i class="fas fa-file-zipper"></i> Download Batch ZIP
+            </a>
+            
+            <a href="javascript:void(0)"
+               onclick="handleExcelDownload(this)"
+               class="action-btn btn-excel">
+                <i class="fas fa-file-excel" style="color: #16a34a;"></i> Export Spreadsheet
+            </a>
+        </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; min-width: 600px;" class="archive-table">
+            <thead>
+                <tr style="text-align: left;">
+                    <th style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">UID Reference</th>
+                    <th style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Customer Identity</th>
+                    <th style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; text-align: right;">View Record</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr style="transition: 0.2s;" onmouseover="this.style.background='#fcfdfe'" onmouseout="this.style.background='transparent'">
+                    <td style="font-family: monospace; font-weight: 800; color: var(--brand-accent);">#{{ b.booking_id }}</td>
+                    <td style="font-weight: 700; color: var(--brand-midnight);">{{ b.customer_name }}</td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'booking_detail' b.booking_id %}" style="color: var(--text-muted); background: #f1f5f9; padding: 10px 14px; border-radius: 12px; transition: 0.3s; display: inline-block;">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" style="padding: 80px; text-align: center; color: #94a3b8;">
+                        <i class="fas fa-folder-open" style="font-size: 3rem; opacity: 0.1; display: block; margin-bottom: 15px;"></i>
+                        <span style="font-weight: 700;">No records found for the selected period.</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+/**
+ * Dynamic URL Handler for Exports (ZIP & Excel)
+ * Ensures current date inputs are always used.
+ */
+function getFilterParams() {
+    const fromDate = document.getElementById('from_date').value;
+    const toDate = document.getElementById('to_date').value;
+    
+    if (!fromDate || !toDate) {
+        alert("Please select a complete date range (From & To) first.");
+        return null;
+    }
+    return `?from_date=${fromDate}&to_date=${toDate}`;
+}
+
+function handleZipDownload(element) {
+    const params = getFilterParams();
+    if (params) {
+        window.location.href = "{% url 'export_zip' %}" + params;
+    }
+}
+
+function handleExcelDownload(element) {
+    // Note: If you want date filtering for Excel too, update your view to accept params.
+    // For now, this points to the generic export URL.
+    window.location.href = "{% url 'export_data' %}";
+}
+</script>
+{% endblock %}

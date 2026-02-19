@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt #{{ booking.receipt_number|default:booking.booking_id }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* A4 Print Optimization */
+        @page { size: A4; margin: 0; }
+        @media print {
+            body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+            .page-container { box-shadow: none !important; margin: 0 !important; border: none !important; width: 100% !important; max-width: 100% !important; }
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+            margin: 0;
+            padding: 40px 0;
+            line-height: 1.4;
+        }
+
+        .page-container {
+            background: white;
+            width: 210mm; /* A4 Width */
+            min-height: 297mm; /* A4 Height */
+            margin: 0 auto;
+            padding: 15mm 20mm;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* --- Header Section --- */
+        .header {
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .company-title { font-size: 24px; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: -0.5px; }
+        .company-sub { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #64748b; font-weight: 700; margin-top: 5px; }
+        
+        .meta-grid { display: grid; grid-template-columns: auto auto; gap: 10px 30px; text-align: right; }
+        .meta-label { font-size: 9px; text-transform: uppercase; font-weight: 800; color: #94a3b8; }
+        .meta-value { font-size: 14px; font-weight: 700; color: #0f172a; }
+
+        /* --- Payer Info --- */
+        .section-box { margin-bottom: 25px; }
+        .box-label { font-size: 10px; text-transform: uppercase; font-weight: 800; color: #3b82f6; margin-bottom: 8px; display: block; }
+        
+        .payer-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .info-row { margin-bottom: 5px; font-size: 13px; }
+        .info-row strong { font-weight: 700; color: #334155; width: 80px; display: inline-block; }
+
+        /* --- Passenger Manifest Table --- */
+        .pax-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px; }
+        .pax-table th { background: #0f172a; color: white; padding: 10px; text-align: left; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .pax-table td { border-bottom: 1px solid #e2e8f0; padding: 10px; color: #334155; font-weight: 500; }
+        .pax-table tr:last-child td { border-bottom: none; }
+
+        /* --- Financials --- */
+        .finance-section { display: flex; gap: 30px; margin-top: 30px; }
+        .notes-area { flex: 1; border: 1px dashed #cbd5e1; padding: 15px; border-radius: 8px; font-size: 11px; color: #64748b; }
+        
+        .totals-area { width: 250px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+        .total-row.final { border-bottom: none; border-top: 2px solid #0f172a; font-size: 16px; font-weight: 800; padding-top: 15px; margin-top: 5px; }
+
+        /* --- Footer & Terms --- */
+        .footer { margin-top: 50px; font-size: 10px; color: #64748b; line-height: 1.5; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+        .signature-grid { display: grid; grid-template-columns: 1fr 1fr; margin-top: 40px; gap: 50px; }
+        .sig-box { text-align: center; }
+        .sig-line { border-bottom: 1px solid #0f172a; height: 40px; margin-bottom: 10px; width: 80%; margin-left: auto; margin-right: auto; }
+
+        /* --- Buttons --- */
+        .btn-print {
+            background: #0f172a; color: white; border: none; padding: 12px 25px; 
+            border-radius: 50px; font-weight: 700; cursor: pointer; 
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3); transition: transform 0.2s;
+        }
+        .btn-print:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="text-align: center; margin-bottom: 30px; position: sticky; top: 20px; z-index: 100;">
+        <button onclick="window.print()" class="btn-print">
+            <span style="font-size: 16px;">🖨</span> Print Receipt
+        </button>
+        <a href="javascript:history.back()" style="margin-left: 15px; color: #64748b; text-decoration: none; font-size: 14px; font-weight: 600;">Back to Dashboard</a>
+    </div>
+
+    <div class="page-container">
+        
+        <header class="header">
+            <div>
+                <h1 class="company-title">{{ booking.company.name|default:"RAZAK & SONS" }}</h1>
+                <div class="company-sub">Hajj, Umrah & Ziyarat Tours</div> 
+                <div style="font-size: 11px; color: #475569; margin-top: 8px; max-width: 300px;">
+                    Head Office: 7, Fatema Chambers, Near H.K. House, Ashram Road, Ahmedabad - 380009.<br>
+                    License: {{ booking.company.id_prefix }}-LTD-2026
+                </div>
+            </div>
+            <div class="meta-grid">
+                <div>
+                    <div class="meta-label">Receipt No.</div>
+                    <div class="meta-value">#{{ booking.receipt_number|default:"--" }}</div>
+                </div>
+                <div>
+                    <div class="meta-label">Date</div>
+                    <div class="meta-value">{{ booking.booking_date|date:"d M, Y"|default:"--" }}</div>
+                </div>
+                <div>
+                    <div class="meta-label">Booking Ref</div>
+                    <div class="meta-value">{{ booking.booking_id }}</div>
+                </div>
+                <div>
+                    <div class="meta-label">C.I.D. No</div>
+                    <div class="meta-value">{{ booking.cid_number|default:"--" }}</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="section-box">
+            <span class="box-label">Payer Information</span>
+            <div class="payer-grid">
+                <div>
+                    <div class="info-row"><strong>Received from:</strong> {{ booking.customer_name }}</div>
+                    <div class="info-row"><strong>Address:</strong> {{ booking.address|default:"--" }}</div>
+                    <div class="info-row"><strong>Email:</strong> {{ booking.contact_email|default:"--" }}</div>
+                </div>
+                <div>
+                    <div class="info-row"><strong>Mobile:</strong> {{ booking.contact_mobile|default:"--" }}</div>
+                    <div class="info-row"><strong>Status:</strong> <span style="background: #000; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; text-transform: uppercase;">{{ booking.payment_status }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <span class="box-label">Passenger Manifest</span>
+            <table class="pax-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 35%;">Passenger Name</th>
+                        <th style="width: 20%;">Passport No.</th>
+                        <th style="width: 20%;">PAN No.</th>
+                        <th style="width: 20%;">Date of Birth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pax in booking.passenger_manifest %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ pax.name }}</strong></td>
+                        <td>{{ pax.passport|default:"--" }}</td>
+                        <td>{{ pax.pan|default:"--" }}</td>
+                        <td>{{ pax.dob|default:"--" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px; color: #94a3b8;">No passengers listed explicitly. Total Members: {{ booking.total_members }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="finance-section">
+            <div class="notes-area">
+                <strong>Remarks / Special Instructions:</strong><br>
+                {{ booking.remarks|default:"None" }}
+                <br><br>
+                <strong>Payment Mode:</strong> {{ booking.payment_mode }} 
+                {% if booking.cheque_number %} (Cheque #{{ booking.cheque_number }}){% endif %}
+            </div>
+
+            <div class="totals-area">
+                <div class="total-row">
+                    <span>Package Cost</span>
+                    <span>₹{{ booking.tour_price }}</span>
+                </div>
+                <div class="total-row" style="color: #10b981;">
+                    <span>Amount Paid</span>
+                    <span>₹{{ booking.amount_paid }}</span>
+                </div>
+                {% if booking.final_payment_due_date %}
+                <div class="total-row" style="color: #ef4444; font-size: 11px;">
+                    <span>Due Date</span>
+                    <span>{{ booking.final_payment_due_date|date:"d M, Y" }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="total-row final">
+                    <span>Total Received</span>
+                    <span>₹{{ booking.amount_paid }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <strong>TERMS & CONDITIONS:</strong>
+            <ul style="margin: 5px 0 0 0; padding-left: 15px;">
+                <li>Departure Tax is not included. Booking amount will not be refundable after issuing the receipt.</li>
+                <li>Rates are subject to foreign exchange rate fluctuation & increase in airfare at the time of actual payment.</li>
+                <li>Full & Final payment must be made on the specified date mentioned; otherwise, booking may be cancelled without refund.</li>
+                <li>Service Tax not included. Subject to Ahmedabad Jurisdiction.</li>
+            </ul>
+
+            <div class="signature-grid">
+                <div class="sig-box">
+                    <div class="sig-line"></div>
+                    <div style="font-weight: 700;">Customer Signature</div>
+                    <div>(I agree to all terms)</div>
+                </div>
+                <div class="sig-box">
+                    <div class="sig-line"></div>
+                    <div style="font-weight: 700;">Authorized Signatory</div>
+                    <div>For, {{ booking.company.name }}</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
