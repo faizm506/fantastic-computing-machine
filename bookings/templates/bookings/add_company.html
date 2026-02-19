@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Onboard New Agency{% endblock %}
+
+{% block content %}
+<style>
+    .onboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+    .input-group { margin-bottom: 20px; }
+    .input-group label {
+        display: block; font-size: 0.75rem; font-weight: 800; color: #64748b; 
+        text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+    }
+    .input-group input {
+        width: 100%; padding: 16px; border-radius: 14px; border: 1.5px solid #e2e8f0;
+        font-family: inherit; font-size: 0.95rem; font-weight: 600; background: #f8fafc;
+        transition: all 0.2s;
+    }
+    .input-group input:focus {
+        background: white; border-color: #10b981; outline: none;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    }
+    
+    .btn-submit {
+        background: #10b981; color: white; border: none; padding: 20px;
+        border-radius: 16px; font-weight: 800; font-size: 1.1rem; width: 100%;
+        cursor: pointer; box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.3);
+        transition: all 0.2s; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-submit:hover { transform: translateY(-2px); background: #059669; }
+
+    @media (max-width: 1024px) {
+        .onboard-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="vanguard-card">
+    <div style="margin-bottom: 40px;">
+        <h1 style="margin: 0; font-weight: 800; font-size: 2.2rem; letter-spacing: -1px; color: var(--brand-midnight);">Network Expansion</h1>
+        <p style="margin: 8px 0 0 0; color: var(--text-muted); font-weight: 500;">Provision a new isolated workspace for a client agency.</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="onboard-grid">
+            
+            <div style="background: white; border: 1px solid #e2e8f0; padding: 30px; border-radius: 24px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">
+                    <div style="background: #eff6ff; color: var(--brand-accent); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fas fa-building"></i></div>
+                    <h2 style="margin: 0; font-size: 1.2rem; font-weight: 800;">Enterprise Details</h2>
+                </div>
+
+                <div class="input-group">
+                    <label>Agency Registered Name</label>
+                    <input type="text" name="company_name" required placeholder="e.g. Kakiwala Tours & Travels">
+                </div>
+
+                <div class="input-group">
+                    <label>3-Letter Booking Prefix</label>
+                    <input type="text" name="id_prefix" required maxlength="5" placeholder="e.g. KAK" style="text-transform: uppercase;">
+                </div>
+
+                <div class="input-group">
+                    <label>Brand Logo (PNG/JPG)</label>
+                    <input type="file" name="logo" accept="image/*" style="padding: 12px; background: white;">
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 30px; border-radius: 24px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">
+                    <div style="background: #fef2f2; color: #ef4444; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="fas fa-user-shield"></i></div>
+                    <h2 style="margin: 0; font-size: 1.2rem; font-weight: 800;">Root Administrator</h2>
+                </div>
+
+                <div class="input-group">
+                    <label>Manager Username</label>
+                    <input type="text" name="manager_username" required placeholder="system.admin" autocomplete="off">
+                </div>
+
+                <div class="input-group">
+                    <label>Contact Email (Optional)</label>
+                    <input type="email" name="manager_email" placeholder="admin@agency.com">
+                </div>
+
+                <div class="input-group">
+                    <label>Security Key (Password)</label>
+                    <input type="password" name="manager_password" required placeholder="Generate strong password">
+                </div>
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-server"></i> Initialize Workspace
+        </button>
+    </form>
+</div>
+{% endblock %}
