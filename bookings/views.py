@@ -18,44 +18,49 @@ def home(request):
 
 # --- DASHBOARD & MANAGEMENT ---
 
+from django.core.paginator import Paginator # Add this import
+from django.db.models import Q, Sum
+
 @login_required
 def dashboard(request):
     try:
-        # 1. Multi-company isolation: Get the user's company
         company = request.user.profile.company
     except ObjectDoesNotExist:
-        # Fallback if the user has no profile created yet
-        return HttpResponse("Error: Your account is not linked to a company. Please contact the Administrator.")
+        return HttpResponse("Error: Your account is not linked to a company.", status=403)
 
-    query = request.GET.get('search')
+    query = request.GET.get('search', '') # Default to empty string
     
-    # 2. Filter bookings by Company first
-    bookings = Booking.objects.filter(company=company)
+    # 1. Base Filter by Company
+    bookings_list = Booking.objects.filter(company=company).order_by('-created_at')
 
-    # 3. Apply Search Filter (if user is searching)
+    # 2. Advanced Search Logic
     if query:
-        bookings = bookings.filter(
+        bookings_list = bookings_list.filter(
             Q(customer_name__icontains=query) | 
             Q(booking_id__icontains=query) |
             Q(receipt_number__icontains=query)
         )
     
-    # Sort by newest first
-    bookings = bookings.order_by('-created_at')
+    # 3. Pagination (10 bookings per page)
+    paginator = Paginator(bookings_list, 10)
+    page_number = request.GET.get('page')
+    bookings = paginator.get_page(page_number)
 
-    # 4. Calculate Dashboard Stats
-    total_travelers = bookings.aggregate(Sum('total_members'))['total_members__sum'] or 0
-    unpaid_count = bookings.exclude(payment_status='Paid').count()
+    # 4. Global Stats (Calculated from ALL company bookings, not just the page)
+    total_travelers = Booking.objects.filter(company=company).aggregate(Sum('total_members'))['total_members__sum'] or 0
+    unpaid_count = Booking.objects.filter(company=company).exclude(payment_status='Paid').count()
+    
     companies = Company.objects.all().order_by('name') if request.user.is_superuser else None
     activities = ActivityLog.objects.filter(company=company)[:10]
 
     context = {
-        'bookings': bookings,
+        'bookings': bookings, # This is now a Page object
         'total_travelers': total_travelers,
         'unpaid_count': unpaid_count,
         'companies': companies,
         'current_company': company,
         'activities': activities,
+        'query': query, # Pass query back to template for persistent search
     }
     
     return render(request, 'bookings/dashboard.html', context)

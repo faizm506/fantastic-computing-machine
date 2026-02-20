@@ -1,192 +1,264 @@
-{% extends 'base.html' %}
-{% block title %}Enterprise Logistics{% endblock %}
-
-{% block content %}
-<style>
-    /* Hero Section Animation */
-    @keyframes heroFadeUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .hero-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 80vh;
-        text-align: center;
-        animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .badge-premium {
-        background: var(--brand-soft);
-        color: var(--brand-accent);
-        padding: 8px 16px;
-        border-radius: 30px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 25px;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-    }
-
-    .hero-title {
-        font-size: clamp(2.5rem, 8vw, 4.5rem);
-        font-weight: 800;
-        letter-spacing: -4px;
-        line-height: 0.95;
-        color: var(--brand-midnight);
-        margin: 0;
-    }
-
-    .hero-subtitle {
-        color: var(--text-muted);
-        font-size: clamp(1.1rem, 2vw, 1.4rem);
-        max-width: 650px;
-        margin: 30px 0 45px 0;
-        line-height: 1.6;
-        font-weight: 500;
-    }
-
-    .cta-group {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .btn-hero {
-        padding: 20px 45px;
-        border-radius: 20px;
-        font-weight: 800;
-        font-size: 1.1rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-    .btn-hero-primary {
-        background: var(--brand-midnight);
-        color: white;
-        box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3);
-    }
-
-    .btn-hero-primary:hover {
-        transform: translateY(-5px);
-        background: #000;
-        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.4);
-    }
-
-    .btn-hero-secondary {
-        background: white;
-        color: var(--brand-midnight);
-        border: 1px solid #e2e8f0;
-    }
-
-    .btn-hero-secondary:hover {
-        background: var(--bg-canvas);
-        border-color: var(--brand-midnight);
-    }
-
-    /* Feature Grid */
-    .feature-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 30px;
-        margin-top: 100px;
-        width: 100%;
-        max-width: 1100px;
-    }
-
-    .feature-card {
-        background: white;
-        padding: 40px;
-        border-radius: 28px;
-        border: 1px solid #f1f5f9;
-        text-align: left;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02);
-    }
-
-    .feature-card i {
-        font-size: 1.5rem;
-        color: var(--brand-accent);
-        margin-bottom: 20px;
-        display: block;
-    }
-
-    .feature-card h3 {
-        margin: 0 0 10px 0;
-        font-size: 1.1rem;
-        font-weight: 700;
-    }
-
-    .feature-card p {
-        margin: 0;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        line-height: 1.6;
-    }
-
-    /* Floating Abstract Element */
-    .blob {
-        position: absolute;
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
-        top: -100px;
-        right: -100px;
-        z-index: -1;
-        border-radius: 50%;
-    }
-</style>
-
-<div class="hero-container">
-    <div class="blob"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguard Travel OS | Enterprise Logistics</title>
     
-    <div class="badge-premium">v2.0 Enterprise Release</div>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <h1 class="hero-title">Vanguard<br>Travel OS<span style="color: var(--brand-accent);">.</span></h1>
-    
-    <p class="hero-subtitle">
-        The ultimate operating system for luxury travel operators. Securely manage multi-company logistics, automated vouchers, and global passenger load in one unified console.
-    </p>
+    <style>
+        :root {
+            --brand-midnight: #000000;
+            --brand-accent: #0071e3;   /* Apple Blue */
+            --brand-soft: #f5f5f7;     /* Apple Canvas */
+            --text-main: #1d1d1f;      /* Apple Primary */
+            --text-muted: #86868b;     /* Apple Secondary */
+            --bg-canvas: #ffffff;
+        }
 
-    <div class="cta-group">
-        {% if not user.is_authenticated %}
-            <a href="{% url 'login' %}" class="btn-hero btn-hero-primary">
-                <i class="fas fa-shield-check" style="margin-right: 10px;"></i> Manager Access
-            </a>
-            <a href="#features" class="btn-hero btn-hero-secondary">Explore Features</a>
-        {% else %}
-            <a href="{% url 'dashboard' %}" class="btn-hero btn-hero-primary">
-                <i class="fas fa-rocket" style="margin-right: 10px;"></i> Go to Workspace
-            </a>
-        {% endif %}
+        /* --- Smooth Apple Resets --- */
+        * { box-sizing: border-box; transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1); }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            overflow-x: hidden;
+            letter-spacing: -0.015em;
+        }
+
+        /* --- Main Layout Container --- */
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- Standalone Navbar --- */
+        .nav-standalone {
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-text {
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: -1px;
+            color: var(--brand-midnight);
+        }
+
+        /* --- Hero Section --- */
+        @keyframes appleFadeUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+            text-align: center;
+            padding: 60px 0;
+            animation: appleFadeUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .badge-premium {
+            background: var(--brand-soft);
+            color: var(--text-main);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+            color: var(--brand-midnight);
+            margin: 0;
+        }
+
+        .hero-subtitle {
+            color: var(--text-muted);
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            max-width: 700px;
+            margin: 30px 0 50px 0;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        /* --- Apple-Style Buttons --- */
+        .cta-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-apple {
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-apple-primary {
+            background: var(--brand-accent);
+            color: white;
+        }
+
+        .btn-apple-primary:hover {
+            background: #0077ed;
+            transform: scale(1.02);
+        }
+
+        .btn-apple-secondary {
+            color: var(--brand-accent);
+        }
+
+        .btn-apple-secondary:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Feature Grid --- */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 80px;
+            width: 100%;
+        }
+
+        .feature-card {
+            background: var(--brand-soft);
+            padding: 50px 40px;
+            border-radius: 30px;
+            text-align: left;
+            border: none;
+        }
+
+        .feature-card i {
+            font-size: 1.8rem;
+            color: var(--brand-midnight);
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .feature-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* --- Decorative Background Blobs --- */
+        .blob {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0, 113, 227, 0.04) 0%, rgba(255, 255, 255, 0) 70%);
+            top: -200px;
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 768px) {
+            .hero-container { padding: 40px 0; min-height: auto; }
+            .feature-card { padding: 30px; }
+            .nav-standalone { height: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-wrapper">
+        <nav class="nav-standalone">
+            <div class="logo-text">Kakiwala & Sons <span style="color: var(--brand-accent);">.</span></div>
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn-apple btn-apple-secondary" style="font-size: 0.9rem;">Back to Console</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-apple btn-apple-primary" style="padding: 10px 24px; font-size: 0.85rem;">Sign In</a>
+            {% endif %}
+        </nav>
+
+        <div class="hero-container">
+            <div class="blob"></div>
+            
+            <div class="badge-premium">v2.0 Enterprise Release</div>
+            
+            <h1 class="hero-title">Travel logistics<br>done right.</h1>
+            
+            <p class="hero-subtitle">
+                The most advanced operating system for luxury travel agencies. Securely manage multi-tenant passenger manifest, automated receipts, and global logistics in one fluid experience.
+            </p>
+
+            <div class="cta-group">
+                {% if not user.is_authenticated %}
+                    <a href="{% url 'login' %}" class="btn-apple btn-apple-primary">
+                        Manager Access
+                    </a>
+                    <a href="#features" class="btn-apple btn-apple-secondary">
+                        Learn more <i class="fas fa-chevron-right" style="margin-left: 10px; font-size: 0.8rem;"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'dashboard' %}" class="btn-apple btn-apple-primary">
+                        Enter Workspace
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="feature-grid" id="features">
+                <div class="feature-card">
+                    <i class="fas fa-layer-group"></i>
+                    <h3>Multi-Tenant</h3>
+                    <p>Iron-clad data isolation for multiple agencies in Ahmedabad and beyond.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <h3>Auto-Vouchers</h3>
+                    <p>Beautiful, official travel receipts and passenger manifests generated instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Live Insights</h3>
+                    <p>Monitor your entire operation with real-time passenger load and financial metrics.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer style="padding: 80px 0 40px; text-align: center;">
+            <p style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                © 2026 Vanguard Travel OS • Engineered for Ahmedabad
+            </p>
+        </footer>
     </div>
 
-    <div class="feature-grid" id="features">
-        <div class="feature-card">
-            <i class="fas fa-layer-group"></i>
-            <h3>Multi-Tenant</h3>
-            <p>Complete data isolation for multiple agencies within a single secure infrastructure.</p>
-        </div>
-        <div class="feature-card">
-            <i class="fas fa-file-invoice-dollar"></i>
-            <h3>Auto-Vouchers</h3>
-            <p>Generate professional PDF travel vouchers and archives with one click.</p>
-        </div>
-        <div class="feature-card">
-            <i class="fas fa-chart-line-up"></i>
-            <h3>Live Insights</h3>
-            <p>Real-time analytics on revenue, passenger load, and financial clearance.</p>
-        </div>
-    </div>
-</div>
-
-<footer style="margin-top: 100px; padding: 40px 0; border-top: 1px solid #e2e8f0; width: 100%; text-align: center;">
-    <p style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">
-        © 2026 Vanguard Logistics • Ahmedabad, India
-    </p>
-</footer>
-{% endblock %}
+</body>
+</html>

@@ -1,227 +1,252 @@
 {% extends 'base.html' %}
-{% block title %}Business Console{% endblock %}
+{% block title %}Business Console | Vanguard Pro{% endblock %}
 
 {% block content %}
 <style>
-    /* --- DASHBOARD ARCHITECTURE --- */
+    /* --- Apple Pro Dashboard Grid --- */
     .dashboard-grid {
         display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 30px;
+        grid-template-columns: 1fr 320px;
+        gap: 32px;
         align-items: start;
+        animation: appleFadeUp 0.8s cubic-bezier(0.15, 1, 0.3, 1);
     }
 
-    /* --- PULSE FEED STYLING --- */
-    .pulse-container {
-        position: sticky;
-        top: 20px;
+    @keyframes appleFadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .pulse-item {
+    /* --- Stat Insight Cards --- */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .insight-card {
+        background: #ffffff;
+        padding: 24px;
+        border-radius: 20px;
+        border: 1px solid rgba(0,0,0,0.03);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
         display: flex;
-        gap: 15px;
-        margin-bottom: 25px;
-        position: relative;
+        justify-content: space-between;
+        align-items: center;
     }
 
-    /* Timeline connector line */
-    .pulse-item:not(:last-child)::after {
-        content: '';
-        position: absolute;
-        left: 6px;
-        top: 24px;
-        width: 2px;
-        height: calc(100% - 10px);
-        background: #f1f5f9;
+    .insight-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .insight-value { font-size: 1.8rem; font-weight: 800; color: var(--brand-midnight); margin-top: 4px; letter-spacing: -1px; }
+
+    /* --- Registry Table Design --- */
+    .registry-box {
+        background: #ffffff;
+        border-radius: 24px;
+        border: 1px solid rgba(0,0,0,0.03);
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
     }
 
-    .pulse-dot {
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: white;
-        border: 3px solid var(--brand-accent);
-        flex-shrink: 0;
-        z-index: 2;
-        margin-top: 4px;
-    }
-
-    .pulse-content {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .pulse-action {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--brand-midnight);
-        line-height: 1.4;
-    }
-
-    .pulse-meta {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        margin-top: 4px;
-    }
-
-    /* --- REUSED TOP-TIER STYLES --- */
-    .header-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; gap: 20px; }
-    .brand-heading h1 { font-size: 2.4rem; font-weight: 800; letter-spacing: -2px; color: var(--brand-midnight); margin: 0; }
-    .action-group { display: flex; gap: 12px; align-items: center; }
-    .btn-vanguard { padding: 14px 24px; border-radius: 16px; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; text-decoration: none; transition: all 0.3s; }
-    .btn-vanguard-primary { background: var(--brand-midnight); color: white; box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.2); }
-    .btn-vanguard-secondary { background: white; color: var(--text-main); border: 1px solid #e2e8f0; }
-    .workspace-switcher { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid #e2e8f0; padding: 6px 6px 6px 18px; border-radius: 18px; display: flex; align-items: center; }
-    .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 40px; }
-    .insight-card { background: white; padding: 30px; border-radius: 28px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
-    .insight-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; }
-    .card-blue::before { background: var(--brand-accent); }
-    .card-red::before { background: #ef4444; }
-    .insight-value { font-size: 2rem; font-weight: 800; color: var(--brand-midnight); }
-    .data-grid-container { background: white; border-radius: 32px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.03); }
     .vanguard-table { width: 100%; border-collapse: collapse; }
-    .vanguard-table th { background: #f8fafc; padding: 20px 24px; text-align: left; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
-    .vanguard-table td { padding: 24px; border-bottom: 1px solid #f8fafc; }
-    .status-pill { font-size: 0.7rem; font-weight: 800; padding: 6px 14px; border-radius: 50px; text-transform: uppercase; }
-    .status-paid { background: #dcfce7; color: #15803d; }
-    .status-pending { background: #fef2f2; color: #b91c1c; }
+    .vanguard-table th { 
+        background: #fafafa; 
+        padding: 18px 24px; 
+        text-align: left; 
+        font-size: 0.7rem; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+        color: var(--text-muted); 
+        border-bottom: 1px solid #f1f1f4;
+    }
+    .vanguard-table td { padding: 20px 24px; border-bottom: 1px solid #f5f5f7; vertical-align: middle; }
 
-    @media (max-width: 1200px) { .dashboard-grid { grid-template-columns: 1fr; } .pulse-container { position: static; } }
+    /* --- Apple Status Pills --- */
+    .status-pill {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 50px;
+        text-transform: uppercase;
+    }
+    .status-paid { background: #e3f9eb; color: #1a8a43; }
+    .status-pending { background: #fff1f0; color: #cf222e; }
+
+    /* --- System Pulse (Refined) --- */
+    .pulse-container { position: sticky; top: 100px; }
+    .pulse-card { background: white; padding: 24px; border-radius: 24px; border: 1px solid rgba(0,0,0,0.03); }
+    .pulse-item { display: flex; gap: 14px; margin-bottom: 20px; position: relative; }
+    
+    .pulse-dot {
+        width: 10px; height: 10px; border-radius: 50%; border: 2px solid #d2d2d7; 
+        background: #fff; flex-shrink: 0; margin-top: 4px; z-index: 2;
+    }
+    /* Dynamic Pulse Colors */
+    .pulse-dot[data-status="auth"] { border-color: #34c759; }
+    .pulse-dot[data-status="init"] { border-color: #0071e3; }
+
+    .pulse-item:not(:last-child)::after { content: ''; position: absolute; left: 4px; top: 14px; width: 1px; height: calc(100% + 14px); background: #f1f1f4; }
+    .pulse-action { font-size: 0.8rem; font-weight: 600; color: var(--brand-midnight); line-height: 1.3; }
+    .pulse-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* --- Mobile & Tablet Adaptation --- */
+    @media (max-width: 1100px) {
+        .dashboard-grid { grid-template-columns: 1fr; }
+        .pulse-container { position: static; margin-top: 30px; }
+        .header-section { flex-direction: column; align-items: flex-start; gap: 24px; }
+        .action-group { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .workspace-switcher { width: 100%; order: 3; }
+    }
+
+    @media (max-width: 600px) {
+        .vanguard-table th:nth-child(3), 
+        .vanguard-table td:nth-child(3) { display: none; } /* Hide financials on small phones for space */
+        .insight-value { font-size: 1.5rem; }
+    }
 </style>
 
 <div id="dashboard-container">
 
-    <div class="header-section">
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px;">
         <div class="brand-heading">
-            <h1>Business Console<span style="color: var(--brand-accent);">.</span></h1>
-            <p style="margin: 10px 0 0 0; color: var(--text-muted); font-weight: 500;">Intelligence overview for {{ current_company.name }}</p>
+            <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -2px; color: var(--brand-midnight); margin:0;">Console<span style="color: var(--brand-accent);">.</span></h1>
+            <p style="margin: 5px 0 0 0; color: var(--text-muted); font-weight: 500; font-size: 0.95rem;">Operational intelligence for {{ current_company.name }}</p>
         </div>
         
-        <div class="action-group">
+        <div class="action-group" style="display: flex; gap: 12px;">
             {% if user.is_superuser %}
-            <form method="POST" action="{% url 'switch_company' %}" class="workspace-switcher">
+            <form method="POST" action="{% url 'switch_company' %}" class="workspace-switcher" style="background: white; border: 1px solid #d2d2d7; padding: 8px 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
                 {% csrf_token %}
-                <i class="fas fa-shuffle" style="color: var(--brand-accent); font-size: 0.9rem;"></i>
-                <select name="company_id" onchange="this.form.submit()" style="border: none; background: transparent; font-weight: 800; color: var(--brand-midnight); outline: none; cursor: pointer; padding-right: 30px; font-family: inherit;">
+                <i class="fas fa-shuffle" style="color: var(--brand-accent); font-size: 0.8rem;"></i>
+                <select name="company_id" onchange="this.form.submit()" style="border: none; background: transparent; font-weight: 700; font-size: 0.85rem; color: var(--brand-midnight); outline: none; cursor: pointer; font-family: inherit;">
                     {% for c in companies %}
-                        <option value="{{ c.id }}" {% if c.id == current_company.id %}selected{% endif %}>
-                            {{ c.name }}
-                        </option>
+                        <option value="{{ c.id }}" {% if c.id == current_company.id %}selected{% endif %}>{{ c.name }}</option>
                     {% endfor %}
                 </select>
             </form>
             {% endif %}
 
-            <a href="{% url 'export_data' %}" class="btn-vanguard btn-vanguard-secondary">
+            <a href="{% url 'export_data' %}" class="btn-apple-action" style="padding: 10px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; text-decoration: none; border: 1px solid #d2d2d7; color: var(--brand-midnight); background: white;">
                 <i class="fas fa-file-export"></i> CSV
             </a>
-            <a href="{% url 'new_booking' %}" class="btn-vanguard btn-vanguard-primary">
+            <a href="{% url 'new_booking' %}" class="btn-apple-action" style="padding: 10px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; text-decoration: none; background: var(--brand-midnight); color: white;">
                 <i class="fas fa-plus"></i> New Entry
             </a>
         </div>
     </div>
 
     <div class="stats-container">
-        <div class="insight-card card-blue">
+        <div class="insight-card">
             <div>
-                <span style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: var(--text-muted); letter-spacing: 1px;">Manifest Load</span>
-                <div class="insight-value">{{ total_travelers|default:"0" }} <small style="font-size: 0.9rem; color: #94a3b8;">PAX</small></div>
+                <span class="insight-label">Manifest Load</span>
+                <div class="insight-value">{{ total_travelers|default:"0" }} <small style="font-size: 0.9rem; color: #86868b; font-weight: 500;">PAX</small></div>
             </div>
-            <i class="fas fa-users-rays" style="font-size: 2.5rem; color: #f1f5f9;"></i>
+            <i class="fas fa-users" style="font-size: 1.5rem; color: #f5f5f7;"></i>
         </div>
         
-        <div class="insight-card card-red">
+        <div class="insight-card">
             <div>
-                <span style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: var(--text-muted); letter-spacing: 1px;">Financial Clearance</span>
-                <div class="insight-value">{{ unpaid_count|default:"0" }} <small style="font-size: 0.9rem; color: #94a3b8;">Pending</small></div>
+                <span class="insight-label">Financial Clearance</span>
+                <div class="insight-value">{{ unpaid_count|default:"0" }} <small style="font-size: 0.9rem; color: #86868b; font-weight: 500;">Pending</small></div>
             </div>
-            <i class="fas fa-clock-rotate-left" style="font-size: 2.5rem; color: #f1f5f9;"></i>
+            <i class="fas fa-credit-card" style="font-size: 1.5rem; color: #f5f5f7;"></i>
         </div>
     </div>
 
     <div class="dashboard-grid">
         
         <div>
-            <div style="position: relative; margin-bottom: 35px;">
-                <i class="fas fa-magnifying-glass" style="position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+            <div style="position: relative; margin-bottom: 30px;">
+                <i class="fas fa-search" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #86868b; font-size: 0.9rem;"></i>
                 <input type="text" name="search" 
-                       placeholder="Search registry by client, reference, or receipt..." 
-                       value="{{ request.GET.search }}"
+                       id="search-input"
+                       placeholder="Search by client, ID, or receipt..." 
+                       value="{{ query }}"
                        hx-get="{% url 'dashboard' %}" 
                        hx-trigger="keyup changed delay:400ms" 
-                       hx-target="#dashboard-container" 
-                       hx-select="#dashboard-container"
+                       hx-target="#registry-results" 
+                       hx-select="#registry-results"
                        hx-push-url="true"
-                       style="width: 100%; padding: 20px 20px 20px 65px; border-radius: 20px; border: 1.5px solid #e2e8f0; font-family: inherit; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                       style="width: 100%; padding: 16px 20px 16px 55px; border-radius: 16px; border: 1px solid #d2d2d7; font-family: inherit; font-size: 1rem; font-weight: 500; background: #fff;">
             </div>
 
-            <div class="data-grid-container">
-                <table class="vanguard-table">
-                    <thead>
-                        <tr>
-                            <th>Log Reference</th>
-                            <th>Client Identity</th>
-                            <th>Financials</th>
-                            <th>Status</th>
-                            <th style="text-align: right;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for b in bookings %}
-                        <tr onmouseover="this.style.background='#fcfdfe'" onmouseout="this.style.background='transparent'">
-                            <td>
-                                <div style="font-family: monospace; font-weight: 800; color: var(--brand-accent); font-size: 0.95rem;">#{{ b.booking_id }}</div>
-                                {% if b.receipt_number %}
-                                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px; font-weight: 700;">REC-{{ b.receipt_number }}</div>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div style="font-weight: 700; color: var(--brand-midnight);">{{ b.customer_name }}</div>
-                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ b.total_members }} PAX</div>
-                            </td>
-                            <td>
-                                <div style="font-weight: 800; color: var(--brand-midnight);">₹{{ b.tour_price }}</div>
-                                <div style="font-size: 0.7rem; color: #10b981; font-weight: 700;">Paid: ₹{{ b.amount_paid }}</div>
-                            </td>
-                            <td>
-                                <span class="status-pill {% if b.payment_status == 'Paid' %}status-paid{% else %}status-pending{% endif %}">
-                                    {{ b.payment_status }}
-                                </span>
-                            </td>
-                            <td style="text-align: right;">
-                                <a href="{% url 'booking_detail' b.booking_id %}" style="color: var(--brand-midnight); background: #f1f5f9; padding: 12px; border-radius: 12px; display: inline-flex; text-decoration: none;">
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="5" style="padding: 60px; text-align: center; color: #94a3b8;">No registry entries found.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div id="registry-results" class="registry-box">
+                <div style="overflow-x: auto;">
+                    <table class="vanguard-table">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Client</th>
+                                <th>Financials</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in bookings %}
+                            <tr onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='transparent'">
+                                <td>
+                                    <div style="font-family: tabular-nums; font-weight: 700; color: var(--brand-accent); font-size: 0.9rem;">#{{ b.booking_id }}</div>
+                                    {% if b.receipt_number %}<div style="font-size: 0.65rem; color: #86868b; font-weight: 700; margin-top: 2px;">REC-{{ b.receipt_number }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600; font-size: 0.95rem;">{{ b.customer_name }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ b.total_members }} PAX</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 700; font-size: 0.9rem;">₹{{ b.tour_price }}</div>
+                                    <div style="font-size: 0.7rem; color: #34c759; font-weight: 600;">Paid: ₹{{ b.amount_paid }}</div>
+                                </td>
+                                <td>
+                                    <span class="status-pill {% if b.payment_status == 'Paid' %}status-paid{% else %}status-pending{% endif %}">
+                                        {{ b.payment_status }}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <a href="{% url 'booking_detail' b.booking_id %}" style="color: var(--brand-midnight); background: #f5f5f7; width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
+                                        <i class="fas fa-chevron-right" style="font-size: 0.8rem;"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" style="padding: 80px; text-align: center; color: #86868b; font-weight: 500;">No registry entries identified.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if bookings.has_other_pages %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-top: 1px solid #f1f1f4; background: #fafafa;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">{{ bookings.start_index }}-{{ bookings.end_index }} of {{ bookings.paginator.count }}</div>
+                    <div style="display: flex; gap: 8px;">
+                        {% if bookings.has_previous %}
+                        <a href="?page={{ bookings.previous_page_number }}{% if query %}&search={{ query }}{% endif %}" style="padding: 6px 12px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 0.75rem; text-decoration: none; color: var(--brand-midnight); font-weight: 700;">Prev</a>
+                        {% endif %}
+                        {% if bookings.has_next %}
+                        <a href="?page={{ bookings.next_page_number }}{% if query %}&search={{ query }}{% endif %}" style="padding: 6px 12px; background: var(--brand-midnight); color: white; border-radius: 8px; font-size: 0.75rem; text-decoration: none; font-weight: 700;">Next</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
 
         <div class="pulse-container">
-            <div class="vanguard-card" style="padding: 30px;">
-                <h3 style="margin: 0 0 30px 0; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--brand-midnight); display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-satellite-dish" style="color: var(--brand-accent);"></i> System Pulse
+            <div class="pulse-card">
+                <h3 style="margin: 0 0 24px 0; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-midnight); display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-broadcast-tower" style="color: var(--brand-accent);"></i> Pulse
                 </h3>
                 
                 {% for log in activities %}
                 <div class="pulse-item">
-                    <div class="pulse-dot"></div>
+                    <div class="pulse-dot" data-status="{% if 'Authentication' in log.action %}auth{% elif 'Initialized' in log.action %}init{% else %}default{% endif %}"></div>
                     <div class="pulse-content">
                         <span class="pulse-action">{{ log.action }}</span>
-                        <span class="pulse-meta">
-                            {{ log.user.username|title }} • {{ log.timestamp|timesince }} ago
-                        </span>
+                        <span class="pulse-meta">{{ log.user.username|title }} • {{ log.timestamp|timesince }}</span>
                     </div>
                 </div>
                 {% empty %}
-                <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem;">
-                    Waiting for activity...
-                </div>
+                <div style="text-align: center; padding: 20px; color: #86868b; font-size: 0.8rem; font-weight: 500;">Listening for activity...</div>
                 {% endfor %}
             </div>
         </div>
