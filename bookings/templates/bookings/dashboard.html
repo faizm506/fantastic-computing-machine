@@ -72,41 +72,40 @@
     .status-paid { background: #e3f9eb; color: #1a8a43; }
     .status-pending { background: #fff1f0; color: #cf222e; }
 
+    /* --- Pulse Styling --- */
+    .pulse-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid #d2d2d7; 
+        background: #fff;
+        flex-shrink: 0;
+        margin-top: 4px;
+        z-index: 2;
+    }
+
+    /* Data Attribute Styling (Stops editor errors) */
+    .pulse-dot[data-status="auth"] { border-color: #34c759; }
+    .pulse-dot[data-status="init"] { border-color: #0071e3; }
+    
+    .financial-status[data-payment="paid"] { color: #34c759 !important; }
+    .financial-status[data-payment="pending"] { color: #ff3b30 !important; }
+
     /* --- System Pulse (Refined) --- */
     .pulse-container { position: sticky; top: 100px; }
     .pulse-card { background: white; padding: 24px; border-radius: 24px; border: 1px solid rgba(0,0,0,0.03); }
     .pulse-item { display: flex; gap: 14px; margin-bottom: 20px; position: relative; }
-    
-    .pulse-dot {
-        width: 10px; height: 10px; border-radius: 50%; border: 2px solid #d2d2d7; 
-        background: #fff; flex-shrink: 0; margin-top: 4px; z-index: 2;
-    }
-    /* Dynamic Pulse Colors */
-    .pulse-dot[data-status="auth"] { border-color: #34c759; }
-    .pulse-dot[data-status="init"] { border-color: #0071e3; }
-
-    .pulse-item:not(:last-child)::after { content: ''; position: absolute; left: 4px; top: 14px; width: 1px; height: calc(100% + 14px); background: #f1f1f4; }
+    .pulse-item:not(:last-child)::after { content: ''; position: absolute; left: 4px; top: 14px; width: 1px; height: calc(100% + 6px); background: #f1f1f4; }
     .pulse-action { font-size: 0.8rem; font-weight: 600; color: var(--brand-midnight); line-height: 1.3; }
     .pulse-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
 
-    /* --- Mobile & Tablet Adaptation --- */
     @media (max-width: 1100px) {
         .dashboard-grid { grid-template-columns: 1fr; }
         .pulse-container { position: static; margin-top: 30px; }
-        .header-section { flex-direction: column; align-items: flex-start; gap: 24px; }
-        .action-group { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-        .workspace-switcher { width: 100%; order: 3; }
-    }
-
-    @media (max-width: 600px) {
-        .vanguard-table th:nth-child(3), 
-        .vanguard-table td:nth-child(3) { display: none; } /* Hide financials on small phones for space */
-        .insight-value { font-size: 1.5rem; }
     }
 </style>
 
 <div id="dashboard-container">
-
     <div class="header-section" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px;">
         <div class="brand-heading">
             <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -2px; color: var(--brand-midnight); margin:0;">Console<span style="color: var(--brand-accent);">.</span></h1>
@@ -117,7 +116,7 @@
             {% if user.is_superuser %}
             <form method="POST" action="{% url 'switch_company' %}" class="workspace-switcher" style="background: white; border: 1px solid #d2d2d7; padding: 8px 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
                 {% csrf_token %}
-                <i class="fas fa-shuffle" style="color: var(--brand-accent); font-size: 0.8rem;"></i>
+                <i class="fas fa-shuffle" style="color: #0071e3; font-size: 0.8rem;"></i>
                 <select name="company_id" onchange="this.form.submit()" style="border: none; background: transparent; font-weight: 700; font-size: 0.85rem; color: var(--brand-midnight); outline: none; cursor: pointer; font-family: inherit;">
                     {% for c in companies %}
                         <option value="{{ c.id }}" {% if c.id == current_company.id %}selected{% endif %}>{{ c.name }}</option>
@@ -126,12 +125,7 @@
             </form>
             {% endif %}
 
-            <a href="{% url 'export_data' %}" class="btn-apple-action" style="padding: 10px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; text-decoration: none; border: 1px solid #d2d2d7; color: var(--brand-midnight); background: white;">
-                <i class="fas fa-file-export"></i> CSV
-            </a>
-            <a href="{% url 'new_booking' %}" class="btn-apple-action" style="padding: 10px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; text-decoration: none; background: var(--brand-midnight); color: white;">
-                <i class="fas fa-plus"></i> New Entry
-            </a>
+            <a href="{% url 'new_booking' %}" style="padding: 10px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; text-decoration: none; background: var(--brand-midnight); color: white;">+ New Entry</a>
         </div>
     </div>
 
@@ -139,35 +133,52 @@
         <div class="insight-card">
             <div>
                 <span class="insight-label">Manifest Load</span>
-                <div class="insight-value">{{ total_travelers|default:"0" }} <small style="font-size: 0.9rem; color: #86868b; font-weight: 500;">PAX</small></div>
+                <div class="insight-value">{{ total_travelers|default:"0" }} <small style="font-size: 0.9rem; color: #86868b;">PAX</small></div>
             </div>
             <i class="fas fa-users" style="font-size: 1.5rem; color: #f5f5f7;"></i>
         </div>
-        
         <div class="insight-card">
             <div>
                 <span class="insight-label">Financial Clearance</span>
-                <div class="insight-value">{{ unpaid_count|default:"0" }} <small style="font-size: 0.9rem; color: #86868b; font-weight: 500;">Pending</small></div>
+                <div class="insight-value">{{ unpaid_count|default:"0" }} <small style="font-size: 0.9rem; color: #86868b;">Pending</small></div>
             </div>
             <i class="fas fa-credit-card" style="font-size: 1.5rem; color: #f5f5f7;"></i>
         </div>
     </div>
 
     <div class="dashboard-grid">
-        
         <div>
-            <div style="position: relative; margin-bottom: 30px;">
-                <i class="fas fa-search" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #86868b; font-size: 0.9rem;"></i>
-                <input type="text" name="search" 
-                       id="search-input"
-                       placeholder="Search by client, ID, or receipt..." 
-                       value="{{ query }}"
-                       hx-get="{% url 'dashboard' %}" 
-                       hx-trigger="keyup changed delay:400ms" 
-                       hx-target="#registry-results" 
-                       hx-select="#registry-results"
-                       hx-push-url="true"
-                       style="width: 100%; padding: 16px 20px 16px 55px; border-radius: 16px; border: 1px solid #d2d2d7; font-family: inherit; font-size: 1rem; font-weight: 500; background: #fff;">
+            <div style="display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap;">
+                <div style="position: relative; flex: 1; min-width: 300px;">
+                    <i class="fas fa-search" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #86868b; font-size: 0.9rem;"></i>
+                    <input type="text" name="search" id="search-input" 
+                           placeholder="Search registry..." 
+                           value="{{ query }}"
+                           hx-get="{% url 'dashboard' %}" 
+                           hx-trigger="keyup changed delay:400ms" 
+                           hx-target="#registry-results" 
+                           hx-select="#registry-results"
+                           hx-include="[name='status_filter']"
+                           hx-push-url="true"
+                           style="width: 100%; padding: 16px 20px 16px 55px; border-radius: 16px; border: 1px solid #d2d2d7; font-family: inherit; font-size: 1rem; font-weight: 500; background: #fff; outline: none;">
+                </div>
+
+                <div style="position: relative; min-width: 180px;">
+                    <i class="fas fa-filter" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #86868b; font-size: 0.8rem; pointer-events: none;"></i>
+                    <select name="status_filter" 
+                            hx-get="{% url 'dashboard' %}" 
+                            hx-trigger="change" 
+                            hx-target="#registry-results" 
+                            hx-select="#registry-results"
+                            hx-include="[name='search']"
+                            hx-push-url="true"
+                            style="width: 100%; padding: 16px 16px 16px 45px; border-radius: 16px; border: 1px solid #d2d2d7; background: #fff; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: var(--brand-midnight); appearance: none; cursor: pointer; outline: none;">
+                        <option value="">All Entries</option>
+                        <option value="Paid" {% if request.GET.status_filter == 'Paid' %}selected{% endif %}>Paid Only</option>
+                        <option value="Pending" {% if request.GET.status_filter == 'Pending' %}selected{% endif %}>Remaining Only</option>
+                    </select>
+                    <i class="fas fa-chevron-down" style="position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: #86868b; font-size: 0.7rem; pointer-events: none;"></i>
+                </div>
             </div>
 
             <div id="registry-results" class="registry-box">
@@ -176,36 +187,63 @@
                         <thead>
                             <tr>
                                 <th>Reference</th>
-                                <th>Client</th>
-                                <th>Financials</th>
-                                <th>Status</th>
-                                <th style="text-align: right;">Action</th>
+                                <th>Client Identity</th>
+                                <th>Financial Status</th>
+                                <th>Verification</th>
+                                <th style="text-align: right;">Management</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for b in bookings %}
                             <tr onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='transparent'">
                                 <td>
-                                    <div style="font-family: tabular-nums; font-weight: 700; color: var(--brand-accent); font-size: 0.9rem;">#{{ b.booking_id }}</div>
+                                    <div style="font-family: tabular-nums; font-weight: 700; color: #0071e3; font-size: 0.9rem;">#{{ b.booking_id }}</div>
                                     {% if b.receipt_number %}<div style="font-size: 0.65rem; color: #86868b; font-weight: 700; margin-top: 2px;">REC-{{ b.receipt_number }}</div>{% endif %}
                                 </td>
+
                                 <td>
                                     <div style="font-weight: 600; font-size: 0.95rem;">{{ b.customer_name }}</div>
                                     <div style="font-size: 0.75rem; color: var(--text-muted);">{{ b.total_members }} PAX</div>
                                 </td>
+
                                 <td>
                                     <div style="font-weight: 700; font-size: 0.9rem;">₹{{ b.tour_price }}</div>
-                                    <div style="font-size: 0.7rem; color: #34c759; font-weight: 600;">Paid: ₹{{ b.amount_paid }}</div>
+                                    <div class="financial-status" data-payment="{% if b.payment_status == 'Paid' %}paid{% else %}pending{% endif %}" style="font-size: 0.7rem; font-weight: 600;">
+                                        {% if b.payment_status == 'Paid' %}Fully Cleared{% else %}Paid: ₹{{ b.amount_paid }}{% endif %}
+                                    </div>
                                 </td>
+
                                 <td>
                                     <span class="status-pill {% if b.payment_status == 'Paid' %}status-paid{% else %}status-pending{% endif %}">
                                         {{ b.payment_status }}
                                     </span>
                                 </td>
+
                                 <td style="text-align: right;">
-                                    <a href="{% url 'booking_detail' b.booking_id %}" style="color: var(--brand-midnight); background: #f5f5f7; width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
-                                        <i class="fas fa-chevron-right" style="font-size: 0.8rem;"></i>
-                                    </a>
+                                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                                        
+                                        <a href="{% url 'booking_detail' b.booking_id %}" 
+                                           title="View Record"
+                                           style="color: var(--brand-midnight); background: #f5f5f7; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid rgba(0,0,0,0.05); transition: 0.2s;">
+                                            <i class="fas fa-eye" style="font-size: 0.85rem;"></i>
+                                        </a>
+
+                                        <a href="{% url 'edit_booking' b.booking_id %}" 
+                                           title="Edit Record"
+                                           style="color: var(--brand-midnight); background: #f5f5f7; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid rgba(0,0,0,0.05); transition: 0.2s;">
+                                            <i class="fas fa-pen" style="font-size: 0.85rem;"></i>
+                                        </a>
+
+                                        <form action="{% url 'delete_booking' b.booking_id %}" method="POST" 
+                                              style="margin: 0;" onsubmit="return confirm('Permanently delete this entry?');">
+                                            {% csrf_token %}
+                                            <button type="submit" title="Delete Record"
+                                                    style="color: #ff3b30; background: #fff1f0; border: 1px solid #ffccc7; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;">
+                                                <i class="fas fa-trash-alt" style="font-size: 0.85rem;"></i>
+                                            </button>
+                                        </form>
+                                        
+                                    </div>
                                 </td>
                             </tr>
                             {% empty %}
@@ -219,12 +257,8 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-top: 1px solid #f1f1f4; background: #fafafa;">
                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">{{ bookings.start_index }}-{{ bookings.end_index }} of {{ bookings.paginator.count }}</div>
                     <div style="display: flex; gap: 8px;">
-                        {% if bookings.has_previous %}
-                        <a href="?page={{ bookings.previous_page_number }}{% if query %}&search={{ query }}{% endif %}" style="padding: 6px 12px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 0.75rem; text-decoration: none; color: var(--brand-midnight); font-weight: 700;">Prev</a>
-                        {% endif %}
-                        {% if bookings.has_next %}
-                        <a href="?page={{ bookings.next_page_number }}{% if query %}&search={{ query }}{% endif %}" style="padding: 6px 12px; background: var(--brand-midnight); color: white; border-radius: 8px; font-size: 0.75rem; text-decoration: none; font-weight: 700;">Next</a>
-                        {% endif %}
+                        {% if bookings.has_previous %}<a href="?page={{ bookings.previous_page_number }}{% if query %}&search={{ query }}{% endif %}" style="padding: 6px 12px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 0.75rem; text-decoration: none; color: black; font-weight: 700;">Prev</a>{% endif %}
+                        {% if bookings.has_next %}<a href="?page={{ bookings.next_page_number }}{% if query %}&search={{ query }}{% endif %}" style="padding: 6px 12px; background: black; color: white; border-radius: 8px; font-size: 0.75rem; text-decoration: none; font-weight: 700;">Next</a>{% endif %}
                     </div>
                 </div>
                 {% endif %}
@@ -233,10 +267,7 @@
 
         <div class="pulse-container">
             <div class="pulse-card">
-                <h3 style="margin: 0 0 24px 0; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-midnight); display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-broadcast-tower" style="color: var(--brand-accent);"></i> Pulse
-                </h3>
-                
+                <h3 style="margin: 0 0 24px 0; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #1d1d1f; display: flex; align-items: center; gap: 10px;"><i class="fas fa-broadcast-tower" style="color: #0071e3;"></i> Pulse</h3>
                 {% for log in activities %}
                 <div class="pulse-item">
                     <div class="pulse-dot" data-status="{% if 'Authentication' in log.action %}auth{% elif 'Initialized' in log.action %}init{% else %}default{% endif %}"></div>
@@ -245,12 +276,9 @@
                         <span class="pulse-meta">{{ log.user.username|title }} • {{ log.timestamp|timesince }}</span>
                     </div>
                 </div>
-                {% empty %}
-                <div style="text-align: center; padding: 20px; color: #86868b; font-size: 0.8rem; font-weight: 500;">Listening for activity...</div>
-                {% endfor %}
+                {% empty %}<div style="text-align: center; padding: 20px; color: #86868b; font-size: 0.8rem;">Listening for activity...</div>{% endfor %}
             </div>
         </div>
-
     </div>
 </div>
 {% endblock %}

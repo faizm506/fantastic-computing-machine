@@ -1,75 +1,94 @@
 {% extends 'base.html' %}
-{% block title %}New Reservation{% endblock %}
+{% block title %}New Reservation | Vanguard Pro{% endblock %}
+
 {% block content %}
 <style>
     /* Section Dividers */
     .form-section-title {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        color: var(--brand-accent);
+        letter-spacing: 1.5px;
+        color: #86868b;
         font-weight: 800;
-        margin: 30px 0 15px 0;
+        margin: 40px 0 20px 0;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
     }
-    .form-section-title::after {
-        content: ''; flex: 1; height: 1px; background: #e2e8f0;
-    }
+    .form-section-title::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
 
-    /* Input Styling */
-    .input-group { margin-bottom: 20px; }
-    label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+    /* Apple Input Styling */
+    .input-group { margin-bottom: 24px; }
+    label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--brand-midnight); margin-bottom: 8px; text-transform: uppercase; }
+    
     input, select, textarea {
-        width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #e2e8f0;
-        font-family: inherit; font-size: 0.95rem; transition: all 0.2s;
-        background: #f8fafc;
+        width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid #d2d2d7;
+        font-family: inherit; font-size: 1rem; font-weight: 500; transition: all 0.2s cubic-bezier(0.15, 1, 0.3, 1);
+        background: #fff; color: var(--brand-midnight);
     }
+    
     input:focus, select:focus, textarea:focus {
-        border-color: var(--brand-accent); background: white; outline: none;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        border-color: #0071e3; outline: none; box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
     }
 
-    /* Grid Layouts */
+    /* Pax Row Design */
+    .pax-row {
+        display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 45px; gap: 12px;
+        background: #f5f5f7; padding: 16px; border-radius: 16px; margin-bottom: 12px;
+        align-items: end; animation: appleFadeUp 0.4s ease;
+    }
+
+    .btn-remove-pax {
+        background: white; border: 1px solid #d2d2d7; color: #ff3b30;
+        height: 44px; width: 44px; border-radius: 10px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .btn-add-pax {
+        background: transparent; color: #0071e3; border: 1px dashed #0071e3;
+        width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer;
+    }
+
+    .btn-submit {
+        background: var(--brand-midnight); color: white; width: 100%; padding: 20px;
+        border-radius: 16px; font-size: 1.1rem; font-weight: 800; border: none; cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.2s;
+    }
+
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-    /* Passenger Table */
-    .manifest-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .manifest-table th { text-align: left; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); padding: 8px; }
-    .manifest-table td { padding: 5px; }
-    .manifest-table input { padding: 10px; font-size: 0.85rem; }
-    .btn-add-pax {
-        background: #f1f5f9; color: var(--brand-midnight); border: 1px dashed #cbd5e1;
-        width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-top: 10px;
-    }
-    .btn-add-pax:hover { background: #e2e8f0; }
+    @keyframes appleFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Submit Button */
-    .btn-submit {
-        background: var(--brand-midnight); color: white; width: 100%; padding: 18px;
-        border-radius: 16px; font-size: 1.1rem; font-weight: 800; border: none; cursor: pointer;
-        box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.3);
+    @media (max-width: 1100px) {
+        .main-layout { grid-template-columns: 1fr !important; }
+        .sidebar-preview { position: static !important; }
+        .pax-row { grid-template-columns: 1fr; }
     }
-    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.4); }
 </style>
 
-<div style="display: grid; grid-template-columns: 1fr 350px; gap: 40px; align-items: start;">
+<div class="main-layout" style="display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start;">
     
-    <form method="post" class="vanguard-card" id="bookingForm">
+    <form method="post" id="bookingForm" class="edit-view">
         {% csrf_token %}
         
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1 style="margin: 0; font-size: 1.8rem; font-weight: 800;">New Receipt Entry</h1>
-            <span style="background: #eff6ff; color: var(--brand-accent); padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">DRAFT MODE</span>
-        </div>
+        <header style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -2px; margin:0;">New Receipt<span style="color: #0071e3;">.</span></h1>
+                <p style="color: #86868b; font-weight: 500; margin: 5px 0 0 0;">Drafting new entry for {{ user.profile.company.name }}</p>
+            </div>
+            <span style="background: #f5f5f7; color: #1d1d1f; padding: 6px 14px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; border: 1px solid #d2d2d7;">DRAFT MODE</span>
+        </header>
 
-        <div class="form-section-title"><i class="fas fa-file-invoice"></i> Receipt Details</div>
+        <div class="form-section-title"><i class="fas fa-file-invoice"></i> Receipt Context</div>
         <div class="grid-3">
             <div class="input-group">
-                <label>Date</label>
+                <label>Booking Date</label>
                 <input type="date" name="booking_date" value="{% now 'Y-m-d' %}">
+            </div>
+            <div class="input-group">
+                <label>Receipt Number</label>
+                <input type="text" name="receipt_number" placeholder="REC-000">
             </div>
             <div class="input-group">
                 <label>C.I.D Number</label>
@@ -79,8 +98,8 @@
 
         <div class="form-section-title"><i class="fas fa-user-circle"></i> Payer Information</div>
         <div class="input-group">
-            <label>Received with thanks from (Name)</label>
-            <input type="text" name="customer_name" required placeholder="Full Name">
+            <label>Full Name (Received From)</label>
+            <input type="text" name="customer_name" id="customer_name" required placeholder="Enter customer name">
         </div>
         
         <div class="grid-2">
@@ -100,31 +119,19 @@
         </div>
 
         <div class="form-section-title"><i class="fas fa-users"></i> Passenger Manifest</div>
-        <table class="manifest-table" id="paxTable">
-            <thead>
-                <tr>
-                    <th style="width: 30%;">Passenger Name</th>
-                    <th>Passport No.</th>
-                    <th>PAN No.</th>
-                    <th>Date of Birth</th>
-                    <th style="width: 40px;"></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="text" name="pax_name[]" placeholder="Name" required></td>
-                    <td><input type="text" name="pax_passport[]" placeholder="Passport"></td>
-                    <td><input type="text" name="pax_pan[]" placeholder="PAN"></td>
-                    <td><input type="date" name="pax_dob[]"></td>
-                    <td><button type="button" onclick="removeRow(this)" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-times"></i></button></td>
-                </tr>
-            </tbody>
-        </table>
-        <button type="button" class="btn-add-pax" onclick="addPaxRow()">+ Add Another Passenger</button>
+        <div id="pax-container">
+            <div class="pax-row">
+                <div class="input-group" style="margin:0"><label>Name</label><input type="text" name="pax_name[]" required placeholder="Name"></div>
+                <div class="input-group" style="margin:0"><label>Passport</label><input type="text" name="pax_passport[]" placeholder="No."></div>
+                <div class="input-group" style="margin:0"><label>PAN</label><input type="text" name="pax_pan[]" placeholder="ID"></div>
+                <div class="input-group" style="margin:0"><label>DOB</label><input type="date" name="pax_dob[]"></div>
+                <button type="button" class="btn-remove-pax" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <button type="button" class="btn-add-pax" onclick="addPaxRow()">+ Add Another Traveler</button>
         <input type="hidden" name="total_members" id="total_members_input" value="1">
 
         <div class="form-section-title"><i class="fas fa-indian-rupee-sign"></i> Payment & Billing</div>
-        
         <div class="grid-2">
             <div class="input-group">
                 <label>Total Package Cost</label>
@@ -132,24 +139,24 @@
             </div>
             <div class="input-group">
                 <label>Amount Paid Now</label>
-                <input type="number" name="amount_paid" required placeholder="0.00">
+                <input type="number" name="amount_paid" id="amount_paid" required placeholder="0.00">
             </div>
         </div>
 
         <div class="grid-3">
             <div class="input-group">
                 <label>Payment Mode</label>
-                <select name="payment_mode" onchange="toggleChequeFields(this)">
+                <select name="payment_mode" onchange="toggleCheque(this.value)">
                     <option value="Cash">Cash</option>
-                    <option value="Cheque">Cheque</option>
                     <option value="Online">Online / UPI</option>
+                    <option value="Cheque">Cheque</option>
                 </select>
             </div>
-            <div class="input-group cheque-field" style="display:none;">
+            <div id="cheque_no_div" class="input-group" style="display: none;">
                 <label>Cheque No.</label>
                 <input type="text" name="cheque_number">
             </div>
-            <div class="input-group cheque-field" style="display:none;">
+            <div id="cheque_date_div" class="input-group" style="display: none;">
                 <label>Cheque Date</label>
                 <input type="date" name="cheque_date">
             </div>
@@ -173,87 +180,78 @@
 
         <div class="input-group">
             <label>Remarks / Notes</label>
-            <textarea name="remarks" rows="2" placeholder="Special requests, flight preferences..."></textarea>
+            <textarea name="remarks" rows="2" placeholder="Flight preferences or special requests..."></textarea>
         </div>
 
-        <div style="margin-top: 30px;">
-            <button type="submit" class="btn-submit">
-                <i class="fas fa-check-circle" style="margin-right: 10px;"></i> Save & Generate Receipt
-            </button>
-        </div>
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-check-circle" style="margin-right: 10px;"></i> Save & Generate Receipt
+        </button>
     </form>
 
-    <aside style="position: sticky; top: 40px;">
-        <div class="vanguard-card" style="background: var(--brand-midnight); color: white; border: none;">
-            <div style="font-size: 0.7rem; text-transform: uppercase; color: rgba(255,255,255,0.5); font-weight: 800; letter-spacing: 1px;">Preview</div>
-            <div style="font-size: 1.5rem; font-weight: 800; margin: 10px 0 20px 0; color: white;">{{ user.profile.company.id_prefix }}-DRAFT</div>
+    <aside class="sidebar-preview" style="position: sticky; top: 100px;">
+        <div style="background: #6e6faf; padding: 30px; border-radius: 24px; border: 3px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+            <div style="font-size: 0.7rem; text-transform: uppercase; color: #f8f8ff; font-weight: 800; letter-spacing: 1px;">Summary</div>
+            <div style="font-size: 1.5rem; font-weight: 800; margin: 10px 0 20px 0; color: #ffffff;">{{ user.profile.company.id_prefix }}-DRAFT</div>
             
             <div style="margin-bottom: 20px;">
-                <label style="color: rgba(255,255,255,0.6); font-size: 0.7rem;">Primary Payer</label>
+                <label>Primary Payer</label>
                 <div style="font-weight: 700; font-size: 1.1rem;" id="preview_name">--</div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-top: 1px solid #f2f2f7; padding-top: 20px;">
                 <div>
-                    <label style="color: rgba(255,255,255,0.6); font-size: 0.7rem;">PAX Count</label>
+                    <label>PAX Count</label>
                     <div style="font-weight: 700;" id="preview_pax">1 Member</div>
                 </div>
                 <div>
-                    <label style="color: rgba(255,255,255,0.6); font-size: 0.7rem;">Total Value</label>
+                    <label>Total Value</label>
                     <div style="font-weight: 700;" id="preview_total">₹0</div>
                 </div>
             </div>
-
-            <p style="font-size: 0.75rem; color: rgba(255,255,255,0.4); line-height: 1.6;">
-                <i class="fas fa-shield-alt"></i> Data will be securely vaulted under <b>{{ user.profile.company.name }}</b>.
-            </p>
         </div>
     </aside>
 </div>
 
 <script>
-    // 1. Dynamic Passenger Rows
     function addPaxRow() {
-        const table = document.getElementById('paxTable').getElementsByTagName('tbody')[0];
-        const newRow = table.insertRow();
-        newRow.innerHTML = `
-            <td><input type="text" name="pax_name[]" placeholder="Name" required oninput="updatePreview()"></td>
-            <td><input type="text" name="pax_passport[]" placeholder="Passport"></td>
-            <td><input type="text" name="pax_pan[]" placeholder="PAN"></td>
-            <td><input type="date" name="pax_dob[]"></td>
-            <td><button type="button" onclick="removeRow(this)" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-times"></i></button></td>
+        const container = document.getElementById('pax-container');
+        const row = document.createElement('div');
+        row.className = 'pax-row';
+        row.innerHTML = `
+            <div class="input-group" style="margin:0"><label>Name</label><input type="text" name="pax_name[]" required oninput="updatePreview()"></div>
+            <div class="input-group" style="margin:0"><label>Passport</label><input type="text" name="pax_passport[]"></div>
+            <div class="input-group" style="margin:0"><label>PAN</label><input type="text" name="pax_pan[]"></div>
+            <div class="input-group" style="margin:0"><label>DOB</label><input type="date" name="pax_dob[]"></div>
+            <button type="button" class="btn-remove-pax" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
         `;
+        container.appendChild(row);
         updatePaxCount();
     }
 
     function removeRow(btn) {
-        const row = btn.parentNode.parentNode;
-        // Don't delete the last row
-        if (document.querySelectorAll('#paxTable tbody tr').length > 1) {
-            row.parentNode.removeChild(row);
+        if (document.querySelectorAll('.pax-row').length > 1) {
+            btn.closest('.pax-row').remove();
             updatePaxCount();
         }
     }
 
     function updatePaxCount() {
-        const count = document.querySelectorAll('#paxTable tbody tr').length;
+        const count = document.querySelectorAll('.pax-row').length;
         document.getElementById('total_members_input').value = count;
         document.getElementById('preview_pax').innerText = count + (count > 1 ? " Members" : " Member");
     }
 
-    // 2. Toggle Cheque Fields
-    function toggleChequeFields(select) {
-        const fields = document.querySelectorAll('.cheque-field');
-        fields.forEach(f => f.style.display = select.value === 'Cheque' ? 'block' : 'none');
+    function toggleCheque(val) {
+        document.getElementById('cheque_no_div').style.display = (val === 'Cheque') ? 'block' : 'none';
+        document.getElementById('cheque_date_div').style.display = (val === 'Cheque') ? 'block' : 'none';
     }
 
-    // 3. Live Preview
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        input.addEventListener('input', function() {
-            if(this.name === 'customer_name') document.getElementById('preview_name').innerText = this.value || '--';
-            if(this.name === 'tour_price') document.getElementById('preview_total').innerText = '₹' + (this.value || '0');
-        });
+    // Live Preview
+    document.getElementById('customer_name').addEventListener('input', e => {
+        document.getElementById('preview_name').innerText = e.target.value || "--";
+    });
+    document.getElementById('tour_price').addEventListener('input', e => {
+        document.getElementById('preview_total').innerText = '₹' + (e.target.value || "0");
     });
 </script>
 {% endblock %}

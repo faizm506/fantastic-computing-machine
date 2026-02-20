@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% block title %}{% if booking %}Update Entry{% else %}New Reservation{% endif %} | Vanguard Pro{% endblock %}
+
+{% block content %}
+<style>
+    /* Section Dividers */
+    .form-section-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--brand-midnight);
+        font-weight: 800;
+        margin: 40px 0 20px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .form-section-title::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+
+    /* Apple Input Styling */
+    .input-group { margin-bottom: 24px; }
+    label { display: block; font-size: 0.75rem; font-weight: 700; color: #86868b; margin-bottom: 8px; text-transform: uppercase; }
+    
+    input, select, textarea {
+        width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid #d2d2d7;
+        font-family: inherit; font-size: 1rem; font-weight: 500; transition: all 0.2s cubic-bezier(0.15, 1, 0.3, 1);
+        background: #fff; color: var(--brand-midnight);
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        border-color: #0071e3; outline: none; box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+    }
+
+    /* Cheque Field Visibility Logic (Fixes Editor Errors) */
+    .cheque-field-toggle[data-visible="none"] { display: none; }
+    .cheque-field-toggle[data-visible="block"] { display: block; }
+
+    /* Manifest Row Styling */
+    .pax-row {
+        display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 45px; gap: 12px;
+        background: #f5f5f7; padding: 16px; border-radius: 16px; margin-bottom: 12px;
+        align-items: end; animation: appleFadeUp 0.4s ease;
+    }
+
+    .btn-remove-pax {
+        background: white; border: 1px solid #d2d2d7; color: #ff3b30;
+        height: 44px; width: 44px; border-radius: 10px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .btn-add-pax {
+        background: transparent; color: #0071e3; border: 1px dashed #0071e3;
+        width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer;
+    }
+
+    .btn-submit {
+        background: var(--brand-midnight); color: white; width: 100%; padding: 20px;
+        border-radius: 16px; font-size: 1.1rem; font-weight: 800; border: none; cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.2s;
+    }
+
+    /* Grid Layouts */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+    @media (max-width: 1100px) {
+        .main-layout { grid-template-columns: 1fr !important; }
+        .sidebar-preview { position: static !important; }
+        .pax-row { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="main-layout" style="display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start;">
+    
+    <form method="post" id="bookingForm" class="edit-view">
+        {% csrf_token %}
+        
+        <header style="margin-bottom: 30px;">
+            <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -2px;">
+                {% if booking %}Update Registry{% else %}New Entry{% endif %}<span style="color: #0071e3;">.</span>
+            </h1>
+            <p style="color: #86868b; font-weight: 500;">
+                {% if booking %}Reference #{{ booking.booking_id }}{% else %}Drafting new client manifest{% endif %}
+            </p>
+        </header>
+
+        <div class="form-section-title"><i class="fas fa-file-invoice"></i> Receipt Details</div>
+        <div class="grid-3">
+            <div class="input-group">
+                <label>Date</label>
+<input type="date" name="booking_date" value="{{ booking.booking_date|date:'Y-m-d'|default:'' }}">
+            </div>
+            <div class="input-group">
+                <label>Receipt Number</label>
+                <input type="text" name="receipt_number" value="{{ booking.receipt_number }}" placeholder="REC-000">
+            </div>
+            <div class="input-group">
+                <label>C.I.D Number</label>
+                <input type="text" name="cid_number" value="{{ booking.cid_number }}" placeholder="Optional">
+            </div>
+        </div>
+
+        <div class="form-section-title"><i class="fas fa-user-circle"></i> Payer Information</div>
+        <div class="input-group">
+            <label>Received with thanks from (Full Name)</label>
+            <input type="text" name="customer_name" id="customer_name" value="{{ booking.customer_name }}" required placeholder="Ex: Faiz Ahmed">
+        </div>
+        
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Mobile Number</label>
+                <input type="text" name="contact_mobile" value="{{ booking.contact_mobile }}" placeholder="+91...">
+            </div>
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" name="contact_email" value="{{ booking.contact_email }}" placeholder="client@example.com">
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>Residential Address</label>
+            <textarea name="address" rows="2" placeholder="Full street address...">{{ booking.address }}</textarea>
+        </div>
+
+        <div class="form-section-title"><i class="fas fa-users"></i> Passenger Manifest</div>
+        <div id="pax-container">
+            {% if booking %}
+                {% for pax in booking.passenger_manifest %}
+                <div class="pax-row">
+                    <div class="input-group" style="margin:0"><label>Name</label><input type="text" name="pax_name[]" value="{{ pax.name }}" required></div>
+                    <div class="input-group" style="margin:0"><label>Passport</label><input type="text" name="pax_passport[]" value="{{ pax.passport }}"></div>
+                    <div class="input-group" style="margin:0"><label>PAN</label><input type="text" name="pax_pan[]" value="{{ pax.pan }}"></div>
+                    <div class="input-group" style="margin:0"><label>DOB</label><input type="date" name="pax_dob[]" value="{{ pax.dob }}"></div>
+                    <button type="button" class="btn-remove-pax" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="pax-row">
+                    <div class="input-group" style="margin:0"><label>Name</label><input type="text" name="pax_name[]" required></div>
+                    <div class="input-group" style="margin:0"><label>Passport</label><input type="text" name="pax_passport[]"></div>
+                    <div class="input-group" style="margin:0"><label>PAN</label><input type="text" name="pax_pan[]"></div>
+                    <div class="input-group" style="margin:0"><label>DOB</label><input type="date" name="pax_dob[]"></div>
+                    <button type="button" class="btn-remove-pax" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+                </div>
+            {% endif %}
+        </div>
+        <button type="button" class="btn-add-pax" onclick="addPaxRow()">+ Add Another Passenger</button>
+        <input type="hidden" name="total_members" id="total_members_input" value="{{ booking.total_members|default:1 }}">
+
+        <div class="form-section-title"><i class="fas fa-indian-rupee-sign"></i> Payment & Billing</div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Total Package Cost</label>
+                <input type="number" name="tour_price" id="tour_price" value="{{ booking.tour_price }}" required placeholder="0.00">
+            </div>
+            <div class="input-group">
+                <label>Amount Paid Now</label>
+                <input type="number" name="amount_paid" id="amount_paid" value="{{ booking.amount_paid }}" required placeholder="0.00">
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <div class="input-group">
+                <label>Payment Mode</label>
+                <select name="payment_mode" onchange="toggleCheque(this.value)">
+                    <option value="Cash" {% if booking.payment_mode == 'Cash' %}selected{% endif %}>Cash</option>
+                    <option value="Online" {% if booking.payment_mode == 'Online' %}selected{% endif %}>Online / UPI</option>
+                    <option value="Cheque" {% if booking.payment_mode == 'Cheque' %}selected{% endif %}>Cheque</option>
+                </select>
+            </div>
+            <div id="cheque_no_div" class="input-group cheque-field-toggle" 
+                 data-visible="{% if booking.payment_mode == 'Cheque' %}block{% else %}none{% endif %}">
+                <label>Cheque No.</label>
+                <input type="text" name="cheque_number" value="{{ booking.cheque_number }}">
+            </div>
+            <div id="cheque_date_div" class="input-group cheque-field-toggle" 
+                 data-visible="{% if booking.payment_mode == 'Cheque' %}block{% else %}none{% endif %}">
+                <label>Cheque Date</label>
+                <input type="date" name="cheque_date" value="{{ booking.cheque_date|date:'Y-m-d' }}">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Payment Stage</label>
+                <select name="payment_stage">
+                    <option value="Advance" {% if booking.payment_stage == 'Advance' %}selected{% endif %}>Advance Token</option>
+                    <option value="Part" {% if booking.payment_stage == 'Part' %}selected{% endif %}>Part Payment</option>
+                    <option value="Full" {% if booking.payment_stage == 'Full' %}selected{% endif %}>Full Payment</option>
+                    <option value="Final" {% if booking.payment_stage == 'Final' %}selected{% endif %}>Final Settlement</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Final Due Date</label>
+                <input type="date" name="final_payment_due_date" value="{{ booking.final_payment_due_date|date:'Y-m-d' }}">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Remarks / Notes</label>
+            <textarea name="remarks" rows="2">{{ booking.remarks }}</textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-check-circle"></i> {% if booking %}Commit Updates{% else %}Save & Generate Receipt{% endif %}
+        </button>
+    </form>
+
+    <aside class="sidebar-preview" style="position: sticky; top: 100px;">
+        <div style="background: white; padding: 30px; border-radius: 24px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+            <div style="font-size: 0.7rem; text-transform: uppercase; color: #86868b; font-weight: 800; letter-spacing: 1px;">Preview</div>
+            <div style="font-size: 1.5rem; font-weight: 800; margin: 10px 0 20px 0;">
+                {% if booking %}#{{ booking.booking_id }}{% else %}DRAFT{% endif %}
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label>Payer</label>
+                <div style="font-weight: 700; font-size: 1.1rem;" id="preview_name">{{ booking.customer_name|default:"--" }}</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-top: 1px solid #f2f2f7; padding-top: 20px;">
+                <div>
+                    <label>PAX</label>
+                    <div style="font-weight: 700;" id="preview_pax">{{ booking.total_members|default:1 }} Member(s)</div>
+                </div>
+                <div>
+                    <label>Total Value</label>
+                    <div style="font-weight: 700;" id="preview_total">₹{{ booking.tour_price|default:0 }}</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script>
+    function addPaxRow() {
+        const container = document.getElementById('pax-container');
+        const row = document.createElement('div');
+        row.className = 'pax-row';
+        row.innerHTML = `
+            <div class="input-group" style="margin:0"><label>Name</label><input type="text" name="pax_name[]" required oninput="updatePreview()"></div>
+            <div class="input-group" style="margin:0"><label>Passport</label><input type="text" name="pax_passport[]"></div>
+            <div class="input-group" style="margin:0"><label>PAN</label><input type="text" name="pax_pan[]"></div>
+            <div class="input-group" style="margin:0"><label>DOB</label><input type="date" name="pax_dob[]"></div>
+            <button type="button" class="btn-remove-pax" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+        `;
+        container.appendChild(row);
+        updatePaxCount();
+    }
+
+    function removeRow(btn) {
+        if (document.querySelectorAll('.pax-row').length > 1) {
+            btn.closest('.pax-row').remove();
+            updatePaxCount();
+        }
+    }
+
+    function updatePaxCount() {
+        const count = document.querySelectorAll('.pax-row').length;
+        document.getElementById('total_members_input').value = count;
+        document.getElementById('preview_pax').innerText = count + " Member(s)";
+    }
+
+    function toggleCheque(val) {
+        const fields = document.querySelectorAll('.cheque-field-toggle');
+        fields.forEach(f => {
+            f.setAttribute('data-visible', val === 'Cheque' ? 'block' : 'none');
+        });
+    }
+
+    // Live Preview
+    document.getElementById('customer_name').addEventListener('input', e => {
+        document.getElementById('preview_name').innerText = e.target.value || "--";
+    });
+    document.getElementById('tour_price').addEventListener('input', e => {
+        document.getElementById('preview_total').innerText = '₹' + (e.target.value || "0");
+    });
+</script>
+{% endblock %}

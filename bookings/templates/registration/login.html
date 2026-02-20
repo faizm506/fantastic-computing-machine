@@ -3,152 +3,164 @@
 
 {% block content %}
 <style>
-    /* Full-screen UI Overrides to remove sidebar/topbar on Login */
-    .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; background: #fff !important; }
-    .sidebar, .top-bar, .hero-section { display: none !important; }
+    /* Full-screen UI Overrides */
+    .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; height: 100vh; overflow: hidden; }
+    .sidebar, .top-bar, .hero-section, nav, footer { display: none !important; }
 
-    .apple-auth-wrapper {
+    /* --- Dynamic Mesh Background --- */
+    .auth-canvas {
+        width: 100%;
+        height: 100vh;
+        background: #ffffff;
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(0, 113, 227, 0.05) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(0, 113, 227, 0.08) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(0, 113, 227, 0.05) 0px, transparent 50%),
+            radial-gradient(at 0% 100%, rgba(0, 113, 227, 0.08) 0px, transparent 50%);
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: 100vh;
-        background-color: #ffffff;
-        padding: 24px;
+        position: relative;
     }
 
+    /* Moving "Aura" Animation */
+    .aura-blob {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(0, 113, 227, 0.06) 0%, rgba(255, 255, 255, 0) 70%);
+        filter: blur(80px);
+        z-index: 0;
+        animation: blobMove 20s infinite alternate;
+    }
+
+    @keyframes blobMove {
+        from { transform: translate(-20%, -20%); }
+        to { transform: translate(20%, 20%); }
+    }
+
+    /* --- Sophisticated Auth Card --- */
     .auth-card {
         width: 100%;
-        max-width: 400px;
+        max-width: 420px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(30px) saturate(180%);
+        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        padding: 60px 40px;
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
         text-align: center;
-        animation: appleReveal 1s cubic-bezier(0.15, 1, 0.3, 1);
+        z-index: 1;
+        animation: appleReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes appleReveal {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
+    /* --- Logo Animation --- */
+    .logo-container {
+        margin-bottom: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
 
-    /* Branding */
-    .auth-brand {
-        font-size: 1.4rem;
+    .logo-dot {
+        width: 12px;
+        height: 12px;
+        background: #0071e3;
+        border-radius: 50%;
+        animation: pulseLogo 2s infinite ease-in-out;
+    }
+
+    .logo-text-animated {
+        font-size: 1.8rem;
         font-weight: 800;
-        letter-spacing: -0.5px;
-        margin-bottom: 80px;
-        color: var(--brand-midnight);
-    }
-
-    .auth-heading {
-        font-size: clamp(2rem, 8vw, 2.5rem);
-        font-weight: 700;
-        letter-spacing: -0.04em;
-        margin-bottom: 12px;
+        letter-spacing: -1.5px;
         color: #1d1d1f;
     }
 
-    .auth-subheading {
-        font-size: 1.1rem;
-        color: #86868b;
-        font-weight: 500;
-        margin-bottom: 48px;
+    @keyframes pulseLogo {
+        0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 113, 227, 0.4); }
+        50% { transform: scale(1.2); opacity: 0.7; box-shadow: 0 0 0 10px rgba(0, 113, 227, 0); }
     }
 
-    /* Apple-Style Input Stack (iOS Look) */
+    /* --- Inputs Styling --- */
+    .auth-heading { font-size: 2.2rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 8px; color: #1d1d1f; }
+    .auth-subheading { font-size: 1rem; color: #86868b; margin-bottom: 40px; font-weight: 500; }
+
     .apple-input-stack {
-        display: flex;
-        flex-direction: column;
-        border: 1px solid #d2d2d7;
-        border-radius: 14px;
+        border-radius: 18px;
         overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.5);
         margin-bottom: 24px;
-        background: #fff;
     }
 
-    /* Target Django auto-generated inputs */
     .apple-input-stack input {
         width: 100%;
-        padding: 18px 20px;
+        padding: 20px 24px;
         border: none;
         background: transparent;
-        font-size: 1rem;
+        font-size: 1.05rem;
         font-family: inherit;
-        font-weight: 400;
-        color: #1d1d1f;
         outline: none;
+        color: #1d1d1f;
+        transition: background 0.3s;
     }
 
-    /* Divider line between stacked inputs */
     .apple-input-stack input:not(:last-child) {
-        border-bottom: 1px solid #d2d2d7;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
 
-    .apple-input-stack input:focus {
-        background: #fbfbfd;
-    }
+    .apple-input-stack input:focus { background: rgba(0, 113, 227, 0.03); }
 
-    /* Primary Action Button */
+    /* --- Primary Button --- */
     .btn-apple-auth {
         width: 100%;
-        padding: 16px;
-        background-color: #0071e3;
-        color: #ffffff;
+        padding: 18px;
+        background: #0071e3;
+        color: white;
         border: none;
-        border-radius: 12px;
-        font-size: 1.05rem;
+        border-radius: 16px;
+        font-size: 1.1rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
-        margin-top: 10px;
+        box-shadow: 0 10px 25px rgba(0, 113, 227, 0.2);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .btn-apple-auth:hover {
-        background-color: #0077ed;
-    }
+    .btn-apple-auth:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(0, 113, 227, 0.3); }
+    .btn-apple-auth:active { transform: scale(0.97); }
 
-    .btn-apple-auth:active {
-        transform: scale(0.98);
-    }
-
-    /* Error Message */
-    .error-hint {
+    .error-toast {
+        background: #fff2f1;
         color: #ff3b30;
+        padding: 12px;
+        border-radius: 12px;
         font-size: 0.85rem;
         font-weight: 600;
-        margin-bottom: 24px;
-        display: block;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 59, 48, 0.1);
     }
 
-    /* Responsive Link Section */
-    .auth-footer {
-        margin-top: 60px;
-        font-size: 0.85rem;
-        color: #86868b;
-    }
-
-    .auth-footer a {
-        color: #0066cc;
-        text-decoration: none;
-        font-weight: 500;
-    }
-
-    /* Mobile Specific Adjustment */
-    @media (max-width: 480px) {
-        .auth-brand { margin-bottom: 60px; }
-        .auth-card { padding: 0 10px; }
-        .auth-heading { font-size: 1.8rem; }
-    }
+    .auth-footer { margin-top: 40px; font-size: 0.85rem; color: #86868b; font-weight: 500; }
+    .auth-footer a { color: #0071e3; text-decoration: none; font-weight: 700; }
 </style>
 
-<div class="apple-auth-wrapper">
+<div class="auth-canvas">
+    <div class="aura-blob"></div>
+    
     <div class="auth-card">
-        <div class="auth-brand">
-            Kakiwala<span style="color: #0071e3;">.</span>
+        <div class="logo-container">
+            <span class="logo-text-animated">Kakiwala</span>
+            <div class="logo-dot"></div>
         </div>
 
-        <h1 class="auth-heading">Sign in to Pro.</h1>
-        <p class="auth-subheading">Enter your operator ID and key.</p>
+        <h1 class="auth-heading">Sign In</h1>
+        <p class="auth-subheading">Kakiwala Travel OS • Ahmedabad Hub</p>
 
         {% if form.errors %}
-            <span class="error-hint">Incorrect identity. Please verify credentials.</span>
+            <div class="error-toast">Invalid operator credentials.</div>
         {% endif %}
 
         <form method="post">
@@ -165,28 +177,20 @@
         </form>
 
         <div class="auth-footer">
-            <p>Administered by Vanguard Enterprise • Ahmedabad Hub</p>
-            <div style="margin-top: 15px;">
-                <a href="#">Forgot password?</a>
+            <p>© 2026 Kakiwala Enterprise Logistics</p>
+            <div style="margin-top: 10px;">
+                <a href="#">Security Assistance</a>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    /* Professional Placeholder Injection */
     document.addEventListener("DOMContentLoaded", function() {
-        const userInput = document.querySelector('input[name="username"]');
-        const passInput = document.querySelector('input[name="password"]');
-        
-        if(userInput) {
-            userInput.placeholder = "Operator ID";
-            userInput.setAttribute('autocomplete', 'username');
-        }
-        if(passInput) {
-            passInput.placeholder = "Security Key";
-            passInput.setAttribute('autocomplete', 'current-password');
-        }
+        const u = document.querySelector('input[name="username"]');
+        const p = document.querySelector('input[name="password"]');
+        if(u) { u.placeholder = "Operator ID"; u.focus(); }
+        if(p) { p.placeholder = "Security Key"; }
     });
 </script>
 {% endblock %}

@@ -17,4 +17,10 @@ urlpatterns = [
     path('company/add/', views.add_company, name='add_company'),
 
     path('switch-company/', views.switch_company, name='switch_company'),
-]
+    path('guide/', views.software_guide, name='software_guide'),
+
+    path('edit/<str:booking_id>/', views.edit_booking, name='edit_booking'),
+    
+    
+    
+    ]

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operator Manual | Vanguard Travel OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --apple-gray: #f5f5f7;
+            --text-main: #1d1d1f;
+            --text-muted: #86868b;
+        }
+
+        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.15, 1, 0.3, 1); }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0; color: var(--text-main);
+            line-height: 1.6; background: #fff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        nav {
+            padding: 15px 30px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(20px); border-bottom: 1px solid #d2d2d7;
+            z-index: 100;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 80px 24px; }
+
+        h1 { font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 800; letter-spacing: -0.05em; margin: 0 0 10px; }
+        .hero-subtitle { font-size: 1.4rem; color: var(--text-muted); font-weight: 500; margin-bottom: 80px; }
+        
+        h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; margin-top: 80px; margin-bottom: 30px; }
+        h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 15px; color: var(--text-main); }
+
+        /* Step Cards */
+        .step-card {
+            background: var(--apple-gray);
+            border-radius: 32px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(0,0,0,0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-badge {
+            background: var(--apple-blue);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: inline-block;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .ui-label {
+            background: #fff;
+            border: 1px solid #d2d2d7;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+
+        /* Highlight Features */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .feature-item {
+            padding: 30px;
+            border-radius: 24px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .feature-item i { font-size: 1.8rem; color: var(--apple-blue); margin-bottom: 20px; display: block; }
+        .feature-item strong { display: block; font-size: 1.1rem; margin-bottom: 10px; }
+
+        .faq-item {
+            border-bottom: 1px solid #f1f1f4;
+            padding: 30px 0;
+        }
+
+        .faq-question { font-weight: 700; font-size: 1.15rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+        .faq-answer { color: var(--text-muted); padding-left: 30px; font-size: 1.05rem; }
+
+        @media (max-width: 768px) {
+            .container { padding: 40px 20px; }
+            .step-card { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div style="font-weight: 800; font-size: 1.2rem;">Kakiwala & Sons<span style="color: var(--apple-blue);">.</span></div>
+        <a href="/" style="text-decoration: none; color: var(--apple-blue); font-weight: 700; font-size: 0.9rem;">Back to Home</a>
+    </nav>
+
+    <div class="container">
+        <header>
+            <div class="step-badge" style="background: rgba(0, 113, 227, 0.1); color: var(--apple-blue);">Vanguard OS v2.0</div>
+            <h1>The Operator Guide.</h1>
+            <p class="hero-subtitle">Step-by-step instructions for managing Hajj & Umrah logistics in Ahmedabad.</p>
+        </header>
+
+        <section>
+            <h2>Core Operating Procedures</h2>
+            
+            <div class="step-card">
+                <span class="step-badge">Phase 01</span>
+                <h3>Registry Creation</h3>
+                <p>Click on <span class="ui-label">+ New Entry</span> from your dashboard. Our system uses a <strong>Dynamic Manifest</strong> logic.</p>
+                <div style="background: white; border-radius: 16px; padding: 20px; margin-top: 15px;">
+                    <ul style="margin:0; padding-left: 20px; font-size: 0.95rem;">
+                        <li><strong>Multi-PAX Support:</strong> Use the "+ Add Traveler" button to bundle families into one reference ID.</li>
+                        <li><strong>Live Preview:</strong> As you type the customer name, the sidebar "Preview" updates in real-time.</li>
+                        <li><strong>Auto-ID:</strong> The system automatically assigns a company-prefixed UID (e.g., KS-001).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <span class="step-badge">Phase 02</span>
+                <h3>Smart Financials</h3>
+                <p>Vanguard OS automates your bookkeeping. Use the <strong>Financial Clearance</strong> section to manage cash flow.</p>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-calculator"></i>
+                        <strong>Live Balance</strong>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">The UI calculates the balance instantly. Red text indicates an outstanding amount; Green indicates clearance.</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-file-invoice"></i>
+                        <strong>Payment Stages</strong>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Select "Final" to automatically toggle the system status to <span style="color:#34c759; font-weight:800;">PAID</span>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-card">
+                <span class="step-badge">Phase 03</span>
+                <h3>Digital Distribution</h3>
+                <p>Once a record is saved, use the <span class="ui-label"><i class="fas fa-eye"></i> View</span> action to access the professional voucher.</p>
+                <ul style="margin-top: 15px;">
+                    <li><strong>WhatsApp Share:</strong> Use the Apple-style <span style="color:#25D366; font-weight:800;">SHARE</span> button to send a live receipt link directly to the customer's phone.</li>
+                    <li><strong>Mobile PDF:</strong> Our receipts automatically reformats for mobile screens, acting as a digital e-ticket for pilgrims.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>Advanced Dashboard Controls</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <i class="fas fa-broadcast-tower"></i>
+                    <strong>Pulse Intelligence</strong>
+                    <p style="font-size: 0.9rem;">The right-hand sidebar tracks every action. It logs who edited a record and when, providing total transparency.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-filter"></i>
+                    <strong>Power Search</strong>
+                    <p style="font-size: 0.9rem;">Search by Receipt Number, Customer Name, or Booking ID. Use filters to isolate "Pending" payments instantly.</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>FAQ & Support</h2>
+            <div class="faq-item">
+                <div class="faq-question"><i class="fas fa-pen-to-square" style="color: var(--apple-blue);"></i> How do I edit a mistake?</div>
+                <div class="faq-answer">Locate the entry on the dashboard and click the <i class="fas fa-pen"></i> icon. This opens the pre-filled form allowing you to update anything from Passport numbers to Payment stages.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question"><i class="fas fa-shield-halved" style="color: var(--apple-blue);"></i> Is the data secure?</div>
+                <div class="faq-answer">Yes. Kakiwala & Sons data is isolated within your specific "Node". Operators from other companies cannot see your passenger manifest or financial data.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question"><i class="fas fa-file-export" style="color: var(--apple-blue);"></i> Can I export for audits?</div>
+                <div class="faq-answer">Use the <span class="ui-label">CSV</span> button at the top of the dashboard to download your entire registry into a spreadsheet for local tax compliance in Ahmedabad.</div>
+            </div>
+        </section>
+
+        <footer style="margin-top: 100px; padding: 60px 0; border-top: 1px solid #f1f1f4; text-align: center;">
+            <p style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">
+                © 2026 Kakiwala Enterprise Logistics • Ahmedabad • System Active <span style="color: #34c759;">●</span>
+            </p>
+        </footer>
+    </div>
+
+</body>
+</html>

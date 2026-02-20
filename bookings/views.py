@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from django.db.models import Sum, Q
+from django.db.models import Count, Sum, Q
 from django.db import transaction
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from weasyprint import HTML
@@ -20,50 +20,72 @@ def home(request):
 
 from django.core.paginator import Paginator # Add this import
 from django.db.models import Q, Sum
-
 @login_required
 def dashboard(request):
     try:
         company = request.user.profile.company
     except ObjectDoesNotExist:
-        return HttpResponse("Error: Your account is not linked to a company.", status=403)
+        return HttpResponse("Error: Unauthorized Node Access.", status=403)
 
-    query = request.GET.get('search', '') # Default to empty string
+    # Capture both search and status filter
+    query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status_filter', '').strip()
     
     # 1. Base Filter by Company
-    bookings_list = Booking.objects.filter(company=company).order_by('-created_at')
+    base_bookings = Booking.objects.filter(company=company).order_by('-created_at')
 
-    # 2. Advanced Search Logic
+    # 2. Advanced Search & Status Logic
+    filtered_bookings = base_bookings
+
     if query:
-        bookings_list = bookings_list.filter(
+        filtered_bookings = filtered_bookings.filter(
             Q(customer_name__icontains=query) | 
             Q(booking_id__icontains=query) |
             Q(receipt_number__icontains=query)
         )
     
-    # 3. Pagination (10 bookings per page)
-    paginator = Paginator(bookings_list, 10)
-    page_number = request.GET.get('page')
-    bookings = paginator.get_page(page_number)
+    if status_filter:
+        filtered_bookings = filtered_bookings.filter(payment_status=status_filter)
 
-    # 4. Global Stats (Calculated from ALL company bookings, not just the page)
-    total_travelers = Booking.objects.filter(company=company).aggregate(Sum('total_members'))['total_members__sum'] or 0
-    unpaid_count = Booking.objects.filter(company=company).exclude(payment_status='Paid').count()
-    
+    # 3. Pagination
+    paginator = Paginator(filtered_bookings, 10)
+    page_number = request.GET.get('page')
+    bookings_page = paginator.get_page(page_number)
+
+    # 4. Optimized Stats (Re-calculated to include Revenue & Balance)
+    # We add Sum of price and Sum of paid to calculate the "Outstanding Balance"
+    stats = filtered_bookings.aggregate(
+        total_pax=Sum('total_members'),
+        total_revenue=Sum('tour_price'),
+        total_collected=Sum('amount_paid'),
+        total_unpaid=Count('id', filter=~Q(payment_status='Paid'))
+    )
+
+    # Calculate Outstanding Balance for the UI
+    rev = stats['total_revenue'] or 0
+    col = stats['total_collected'] or 0
+    remaining_balance = rev - col
+
     companies = Company.objects.all().order_by('name') if request.user.is_superuser else None
-    activities = ActivityLog.objects.filter(company=company)[:10]
+    
+    # select_related avoids "N+1" queries when showing usernames in the Pulse feed
+    activities = ActivityLog.objects.filter(company=company).select_related('user')[:10]
 
     context = {
-        'bookings': bookings, # This is now a Page object
-        'total_travelers': total_travelers,
-        'unpaid_count': unpaid_count,
+        'bookings': bookings_page,
+        'total_travelers': stats['total_pax'] or 0,
+        'total_revenue': rev,
+        'remaining_balance': remaining_balance,
+        'unpaid_count': stats['total_unpaid'] or 0,
         'companies': companies,
         'current_company': company,
         'activities': activities,
-        'query': query, # Pass query back to template for persistent search
+        'query': query,
+        'status_filter': status_filter,
     }
     
     return render(request, 'bookings/dashboard.html', context)
+
 
 @login_required
 def switch_company(request):
@@ -103,10 +125,23 @@ def new_booking(request):
             val = request.POST.get(key)
             return val if val else None
 
+        # --- FIX LOGIC START ---
+        # Capture values and handle potential empty strings/whitespace
+        payment_stage = request.POST.get('payment_stage', '').strip()
+        tour_price = float(request.POST.get('tour_price') or 0)
+        amount_paid = float(request.POST.get('amount_paid') or 0)
+
+        # Logic: Mark as Paid if stage is 'Final' (any case) OR if full amount is cleared
+        if payment_stage.title() == 'Final' or (amount_paid >= tour_price and tour_price > 0):
+            calculated_status = 'Paid'
+        else:
+            calculated_status = 'Pending'
+        # --- FIX LOGIC END ---
+
         # 2. Atomic Transaction for Booking and Pulse Attribution
         try:
             with transaction.atomic():
-                # Create the Booking object (This triggers the Signal)
+                # Create the Booking object
                 booking = Booking.objects.create(
                     company=request.user.profile.company,
                     receipt_number=request.POST.get('receipt_number'),
@@ -118,19 +153,18 @@ def new_booking(request):
                     address=request.POST.get('address'),
                     total_members=len(manifest),
                     passenger_manifest=manifest, 
-                    tour_price=request.POST.get('tour_price') or 0,
-                    amount_paid=request.POST.get('amount_paid') or 0,
+                    tour_price=tour_price,
+                    amount_paid=amount_paid,
                     payment_mode=request.POST.get('payment_mode'),
                     cheque_number=request.POST.get('cheque_number'),
                     cheque_date=get_date('cheque_date'),
-                    payment_stage=request.POST.get('payment_stage'),
+                    payment_stage=payment_stage,
                     final_payment_due_date=get_date('final_payment_due_date'),
-                    payment_status='Paid' if request.POST.get('payment_stage') == 'Final' else 'Pending',
+                    payment_status=calculated_status, # Using the fixed logic variable
                     remarks=request.POST.get('remarks')
                 )
 
                 # 3. Pulse Attribution
-                # Locate the log entry created by the post_save signal
                 latest_log = ActivityLog.objects.filter(
                     reference_id=booking.booking_id,
                     company=request.user.profile.company
@@ -143,16 +177,24 @@ def new_booking(request):
             return redirect('dashboard')
             
         except Exception as e:
-            # Handle potential errors (e.g., database integrity issues)
             return render(request, 'bookings/booking_form.html', {'error': str(e)})
 
     return render(request, 'bookings/booking_form.html')
-
 @login_required
 def booking_detail(request, booking_id):
-    # Security: Ensure the booking belongs to the user's company
+    # 1. Security: Ensure the booking belongs to the user's company
     booking = get_object_or_404(Booking, booking_id=booking_id, company=request.user.profile.company)
-    return render(request, 'bookings/booking_detail.html', {'booking': booking})
+    
+    # 2. Calculation: Handle balance math in Python to avoid Template Errors
+    # We use a simple subtraction; if amount_paid > tour_price, balance becomes 0
+    balance_due = max(0, booking.tour_price - booking.amount_paid)
+
+    context = {
+        'booking': booking,
+        'balance_due': balance_due, # This fixes the 'subtract' filter error
+    }
+    
+    return render(request, 'bookings/booking_detail.html', context)
 
 @login_required
 def delete_booking(request, booking_id):
@@ -323,3 +365,70 @@ def add_company(request):
 
     return render(request, 'bookings/add_company.html')
 
+def software_guide(request):
+    return render(request, 'bookings/guide.html')
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from .models import Booking, ActivityLog
+
+@login_required
+def edit_booking(request, booking_id):
+    # 1. Fetch the existing record (Securely isolated to the company)
+    booking = get_object_or_404(Booking, booking_id=booking_id, company=request.user.profile.company)
+
+    if request.method == 'POST':
+        # 2. Reconstruct Manifest from POST data
+        names = request.POST.getlist('pax_name[]')
+        passports = request.POST.getlist('pax_passport[]')
+        pans = request.POST.getlist('pax_pan[]')
+        dobs = request.POST.getlist('pax_dob[]')
+        
+        manifest = []
+        for i in range(len(names)):
+            if names[i].strip():
+                manifest.append({
+                    "name": names[i],
+                    "passport": passports[i] if i < len(passports) else "",
+                    "pan": pans[i] if i < len(pans) else "",
+                    "dob": dobs[i] if i < len(dobs) else ""
+                })
+
+        try:
+            with transaction.atomic():
+                # 3. Update core fields
+                booking.customer_name = request.POST.get('customer_name')
+                booking.contact_mobile = request.POST.get('contact_mobile')
+                booking.tour_price = float(request.POST.get('tour_price') or 0)
+                booking.amount_paid = float(request.POST.get('amount_paid') or 0)
+                booking.payment_stage = request.POST.get('payment_stage')
+                
+                # 4. Update Manifest & Status
+                booking.passenger_manifest = manifest
+                booking.total_members = len(manifest)
+                
+                # Auto-status Logic
+                if booking.payment_stage.title() == 'Final' or booking.amount_paid >= booking.tour_price:
+                    booking.payment_status = 'Paid'
+                else:
+                    booking.payment_status = 'Pending'
+                
+                booking.save()
+                messages.success(request, f"Registry #{booking.booking_id} has been successfully updated.")
+
+                # 5. Log the Activity
+                ActivityLog.objects.create(
+                    company=request.user.profile.company,
+                    user=request.user,
+                    action=f"Updated Registry #{booking.booking_id}",
+                    reference_id=booking.booking_id
+                )
+            
+            return redirect('dashboard')
+        except Exception as e:
+            return render(request, 'bookings/edit_booking.html', {'booking': booking, 'error': str(e)})
+
+    # GET request: Show form with existing data pre-loaded
+    return render(request, 'bookings/edit_booking.html', {'booking': booking})

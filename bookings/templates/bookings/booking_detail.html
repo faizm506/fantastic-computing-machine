@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OFFICIAL RECEIPT - {{ booking.booking_id }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* --- A4 Print Architecture --- */
         @page { size: A4; margin: 0; }
@@ -15,9 +17,10 @@
         }
 
         :root {
-            --print-navy: #0f172a;
-            --print-accent: #3b82f6;
-            --print-gray: #f1f5f9;
+            --print-navy: #1d1d1f;
+            --print-accent: #0071e3;
+            --print-gray: #f5f5f7;
+            --apple-green: #25D366;
         }
 
         body {
@@ -35,210 +38,234 @@
             margin: 0 auto;
             position: relative;
             box-sizing: border-box;
-            padding: 12mm;
+            padding: 15mm;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
         /* --- Security Watermark --- */
         .watermark {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 120px;
-            font-weight: 900;
-            color: #000;
-            opacity: 0.03;
-            pointer-events: none;
-            white-space: nowrap;
+            font-size: 100px; font-weight: 900;
+            color: #000; opacity: 0.02;
+            pointer-events: none; white-space: nowrap;
             text-transform: uppercase;
         }
 
-        /* --- Top Navigation --- */
+        /* --- Header Section --- */
         .official-header {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex; justify-content: space-between;
             border-bottom: 4px solid var(--print-navy);
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+            padding-bottom: 20px; margin-bottom: 30px;
         }
 
-        .brand-zone { display: flex; align-items: center; gap: 15px; }
-        .logo-box {
-            width: 60px; height: 60px; background: var(--print-navy);
-            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        .company-logo {
+            width: 65px; height: 65px; background: var(--print-navy);
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 900; font-size: 28px; margin-right: 15px;
         }
-        .company-name { font-size: 26px; font-weight: 800; text-transform: uppercase; letter-spacing: -1px; }
 
-        .document-type {
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        .document-title-box { text-align: right; }
+        .doc-label { font-size: 10px; font-weight: 800; color: var(--print-accent); letter-spacing: 2px; text-transform: uppercase; }
+        .doc-title { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -1px; }
+
+        /* --- Reference Bar --- */
+        .ref-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            background: var(--print-gray); border: 1px solid #e2e8f0;
+            border-radius: 12px; padding: 15px; margin-bottom: 30px;
         }
-        .doc-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--print-accent); letter-spacing: 2px; }
-        .doc-title { font-size: 24px; font-weight: 800; margin: 0; }
+        .ref-item label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .ref-item span { font-size: 13px; font-weight: 700; font-family: 'Courier New', Courier, monospace; }
 
-        /* --- Reference Grid --- */
-        .ref-bar {
-            background: var(--print-gray);
-            padding: 15px 25px;
-            border-radius: 14px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            margin-bottom: 30px;
-            border: 1px solid #e2e8f0;
-        }
-        .ref-item label { font-size: 8px; font-weight: 800; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 4px; }
-        .ref-item span { font-size: 13px; font-weight: 700; font-family: monospace; }
+        /* --- Content Layout --- */
+        .receipt-body { display: grid; grid-template-columns: 1fr 260px; gap: 40px; flex-grow: 1; }
+        h3 { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--print-accent); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px; }
 
-        /* --- Core Content Layout --- */
-        .content-layout { display: grid; grid-template-columns: 1fr 240px; gap: 30px; flex-grow: 1; }
-
-        .main-pane h3 { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--print-accent); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px; }
-        
-        .payer-card { margin-bottom: 35px; }
-        .payer-name { font-size: 18px; font-weight: 800; margin-bottom: 5px; }
-        .payer-detail { font-size: 12px; color: #475569; margin-bottom: 3px; }
-
-        /* --- Professional Table --- */
+        /* --- Tables --- */
         .pax-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
         .pax-table th { font-size: 9px; text-transform: uppercase; font-weight: 800; color: #64748b; padding: 10px; text-align: left; border-bottom: 2px solid var(--print-navy); }
         .pax-table td { padding: 12px 10px; font-size: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
-        .pax-table tr:nth-child(even) { background: #fafafa; }
 
-        /* --- Sidebar Column --- */
-        .side-pane { border-left: 1px solid #e2e8f0; padding-left: 25px; }
-        
-        .qr-placeholder {
-            width: 100px; height: 100px; border: 1px solid #e2e8f0; margin-bottom: 20px;
-            display: flex; align-items: center; justify-content: center; font-size: 8px; color: #94a3b8; text-align: center;
+        /* --- Financial Sidebar --- */
+        .financial-box { background: var(--print-navy); color: white; padding: 25px; border-radius: 20px; }
+        .fin-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 12px; opacity: 0.9; }
+        .fin-row.highlight { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; margin-top: 12px; font-weight: 800; font-size: 18px; opacity: 1; }
+        .fin-row.balance { color: #ff453a; font-weight: 700; }
+
+        /* --- Apple Button Styles --- */
+        .apple-btn {
+            padding: 12px 24px; border-radius: 12px; font-weight: 700; 
+            font-size: 0.85rem; border: none; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; 
+            text-decoration: none; transition: 0.3s cubic-bezier(0.15, 1, 0.3, 1);
         }
 
-        .financial-card { background: var(--print-navy); color: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
-        .fin-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 11px; opacity: 0.8; }
-        .fin-row.total { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; margin-top: 10px; opacity: 1; font-weight: 800; font-size: 16px; }
+        .btn-whatsapp { 
+            background: #f5f5f7; color: var(--print-navy);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .btn-whatsapp:hover { background: var(--apple-green); color: white; border-color: transparent; transform: translateY(-1px); }
 
-        /* --- Signatures & Terms --- */
-        .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
-        .sig-line { border-top: 1px solid var(--print-navy); margin-top: 50px; text-align: center; padding-top: 10px; font-size: 11px; font-weight: 700; }
+        .btn-print { background: var(--print-navy); color: white; }
+        .btn-print:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        .terms-text { font-size: 9px; color: #64748b; margin-top: 30px; line-height: 1.6; background: #f8fafc; padding: 15px; border-radius: 8px; }
+        .btn-back { background: white; color: var(--print-navy); border: 1px solid #d2d2d7; }
+        .btn-back:hover { background: #fafafa; }
+
+        /* --- Footer --- */
+        .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 50px; }
+        .sig-line { border-top: 1px solid var(--print-navy); padding-top: 10px; text-align: center; font-size: 11px; font-weight: 700; }
+        .terms-box { font-size: 9px; color: #64748b; line-height: 1.6; background: #f8fafc; padding: 15px; border-radius: 10px; margin-top: 40px; border: 1px dashed #cbd5e1; }
+
+        /* --- Mobile "PDF-Style" View Optimizer --- */
+        @media screen and (max-width: 210mm) {
+            body { background: #f1f5f9; padding: 0; }
+            .page-container { width: 100%; min-height: 100vh; padding: 10mm; border-radius: 0; box-shadow: none; }
+            .no-print { position: static !important; padding: 20px; background: white; border-bottom: 1px solid #e2e8f0; justify-content: center; }
+            .receipt-body { grid-template-columns: 1fr; gap: 20px; }
+            .sidebar { border-left: none; padding-left: 0; border-top: 1px dashed #e2e8f0; padding-top: 20px; }
+        }
     </style>
 </head>
 <body>
 
     <div class="no-print" style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 999;">
-        <button onclick="window.print()" style="background: var(--print-navy); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; cursor: pointer;">🖨 PRINT VOUCHER</button>
-        <button onclick="history.back()" style="background: white; border: 1px solid #cbd5e1; padding: 12px 24px; border-radius: 10px; font-weight: 800; cursor: pointer;">BACK</button>
+        <a href="https://wa.me/{{ booking.contact_mobile }}?text={{ booking.company.name|urlencode }}%20-%20Payment%20Receipt%0A%0AHello%20{{ booking.customer_name|urlencode }},%20your%20booking%20#{{ booking.booking_id }}%20at%20{{ booking.company.name|urlencode }}%20is%20confirmed.%0A%0ATotal:%20₹{{ booking.tour_price }}%0APaid:%20₹{{ booking.amount_paid }}%0ABalance:%20₹{{ balance_due }}%0A%0AView%20Receipt:%20{{ request.build_absolute_uri }}" 
+           target="_blank" 
+           class="apple-btn btn-whatsapp">
+            <i class="fab fa-whatsapp"></i> SHARE
+        </a>
+
+        <button onclick="window.print()" class="apple-btn btn-print">
+            <i class="fas fa-print"></i> PRINT
+        </button>
+        
+        <button onclick="history.back()" class="apple-btn btn-back">
+            BACK
+        </button>
     </div>
 
     <div class="page-container">
-        <div class="watermark">{{ booking.company.name|default:"VANGUARD" }}</div>
+        <div class="watermark">{{ booking.company.name|upper }}</div>
 
         <header class="official-header">
-            <div class="brand-zone">
-                <div class="logo-box">
+            <div style="display: flex; align-items: center;">
+                <div class="company-logo">
                     {% if booking.company.logo %}
-                        <img src="{{ booking.company.logo.url }}" style="width: 40px; height: 40px; object-fit: contain;">
+                        <img src="{{ booking.company.logo.url }}" style="width: 45px; height: 45px; object-fit: contain;">
                     {% else %}
-                        <span style="color: white; font-weight: 900; font-size: 24px;">{{ booking.company.id_prefix|default:"V" }}</span>
+                        {{ booking.company.id_prefix|slice:":1" }}
                     {% endif %}
                 </div>
                 <div>
-                    <h1 class="company-name">{{ booking.company.name|default:"RAZAK & SONS" }}</h1>
-                    <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase;">Ahmedabad • Hajj & Umrah Specialists</div>
+                    <h1 style="font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -1px;">{{ booking.company.name|upper }}</h1>
+                    <div style="font-size: 10px; font-weight: 600; color: #64748b;">AHMEDABAD NODE • INTERNATIONAL TOUR LOGISTICS</div>
                 </div>
             </div>
-            <div class="document-type">
-                <span class="doc-label">Official Payment Voucher</span>
-                <h2 class="doc-title">CONFIRMED</h2>
+            <div class="document-title-box">
+                <span class="doc-label">Status: {{ booking.payment_status|upper }}</span>
+                <h2 class="doc-title">OFFICIAL RECEIPT</h2>
             </div>
         </header>
 
-        <div class="ref-bar">
-            <div class="ref-item"><label>Booking UID</label><span>{{ booking.booking_id }}</span></div>
-            <div class="ref-item"><label>Receipt No</label><span>#{{ booking.receipt_number|default:booking.booking_id }}</span></div>
-            <div class="ref-item"><label>Issue Date</label><span>{{ booking.booking_date|date:"d-m-Y" }}</span></div>
-            <div class="ref-item"><label>C.I.D. Ref</label><span>{{ booking.cid_number|default:"N/A" }}</span></div>
+        <div class="ref-grid">
+            <div class="ref-item"><label>Registry ID</label><span>{{ booking.booking_id }}</span></div>
+            <div class="ref-item"><label>Receipt No.</label><span>#{{ booking.receipt_number|default:booking.booking_id }}</span></div>
+            <div class="ref-item"><label>Issue Date</label><span>{{ booking.booking_date|date:"d M, Y" }}</span></div>
+            <div class="ref-item"><label>C.I.D. Ref</label><span>{{ booking.cid_number|default:"NON-CID" }}</span></div>
         </div>
 
-        <div class="content-layout">
-            <div class="main-pane">
-                <div class="payer-card">
-                    <h3>Primary Payer</h3>
-                    <div class="payer-name">{{ booking.customer_name }}</div>
-                    <div class="payer-detail"><i class="fas fa-phone"></i> {{ booking.contact_mobile }}</div>
-                    <div class="payer-detail"><i class="fas fa-map-pin"></i> {{ booking.address|default:"Ahmedabad, Gujarat, India" }}</div>
-                </div>
+        <div class="receipt-body">
+            <div class="main-content">
+                <section>
+                    <h3>Received From</h3>
+                    <div style="font-size: 18px; font-weight: 800;">{{ booking.customer_name }}</div>
+                    <div style="font-size: 12px; color: #475569; margin-top: 5px;">
+                        <i class="fas fa-phone"></i> {{ booking.contact_mobile }} | <i class="fas fa-envelope"></i> {{ booking.contact_email|default:"N/A" }}
+                    </div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 4px; max-width: 400px;">
+                        {{ booking.address|default:"Address not specified" }}
+                    </div>
+                </section>
 
-                <h3>Passenger Manifest</h3>
-                <table class="pax-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Full Name</th>
-                            <th>Passport</th>
-                            <th>D.O.B</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for pax in booking.passenger_manifest %}
-                        <tr>
-                            <td style="color: #94a3b8;">0{{ forloop.counter }}</td>
-                            <td>{{ pax.name }}</td>
-                            <td style="font-family: monospace;">{{ pax.passport|default:"---" }}</td>
-                            <td>{{ pax.dob|default:"---" }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="4" style="text-align: center; color: #94a3b8;">Collective Booking ({{ booking.total_members }} Members)</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <section style="margin-top: 35px;">
+                    <h3>Group Manifest</h3>
+                    <table class="pax-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Passenger Name</th>
+                                <th>Passport / ID</th>
+                                <th>D.O.B</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pax in booking.passenger_manifest %}
+                            <tr>
+                                <td style="color: #94a3b8;">0{{ forloop.counter }}</td>
+                                <td>{{ pax.name }}</td>
+                                <td style="font-family: monospace;">{{ pax.passport|default:"---" }}</td>
+                                <td>{{ pax.dob|default:"---" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" style="text-align: center; color: #94a3b8;">Group Booking ({{ booking.total_members }} PAX)</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
 
-                <h3>Remarks & Conditions</h3>
-                <div style="font-size: 11px; color: #475569; line-height: 1.6;">
-                    {{ booking.remarks|default:"Standard Hajj/Umrah package rules apply. Please carry your original passport for verification at the terminal." }}
-                </div>
+                <section>
+                    <h3>Operator Remarks</h3>
+                    <p style="font-size: 11px; color: #475569; line-height: 1.6;">
+                        {{ booking.remarks|default:"Thank you for choosing us. This is a computer-generated receipt." }}
+                    </p>
+                </section>
             </div>
 
-            <div class="side-pane">
-                <div class="qr-placeholder">
-                    DIGITAL VERIFICATION<br>SCAN TO VALIDATE<br>
-                    <i class="fas fa-qrcode" style="font-size: 40px; margin-top: 10px;"></i>
-                </div>
-
-                <div class="financial-card">
-                    <div class="fin-row"><span>Tour Price</span><span>₹{{ booking.tour_price }}</span></div>
-                    <div class="fin-row"><span>GST/Fees</span><span>Included</span></div>
-                    <div class="fin-row.total"><span>Paid Amount</span><span>₹{{ booking.amount_paid }}</span></div>
-                </div>
-
-                <div style="background: #f1f5f9; padding: 15px; border-radius: 12px;">
-                    <label style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase;">Payment Mode</label>
-                    <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">{{ booking.payment_mode|upper }}</div>
-                    {% if booking.cheque_number %}
-                        <div style="font-size: 9px; margin-top: 2px;">Ref: {{ booking.cheque_number }}</div>
+            <div class="sidebar">
+                <div class="financial-box">
+                    <div class="fin-row"><span>Tour Package</span><span>₹{{ booking.tour_price }}</span></div>
+                    <div class="fin-row"><span>GST & Taxes</span><span>Included</span></div>
+                    <div class="fin-row highlight"><span>Amount Paid</span><span>₹{{ booking.amount_paid }}</span></div>
+                    
+                    {% if booking.payment_status != 'Paid' %}
+                    <div class="fin-row balance" style="margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 10px;">
+                        <span>Balance Due</span><span>₹{{ balance_due }}</span>
+                    </div>
                     {% endif %}
                 </div>
+
+                <div style="margin-top: 25px; padding: 15px; background: var(--print-gray); border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <label style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase;">Payment Details</label>
+                    <div style="font-size: 13px; font-weight: 700; color: var(--print-navy);">{{ booking.payment_mode|upper }}</div>
+                    {% if booking.payment_mode == 'Cheque' %}
+                        <div style="font-size: 9px; color: #475569; margin-top: 4px;">Cheque No: {{ booking.cheque_number }}</div>
+                    {% endif %}
+                    <div style="font-size: 9px; color: var(--print-accent); font-weight: 700; margin-top: 5px;">Stage: {{ booking.payment_stage }}</div>
+                </div>
+
+                <div style="margin-top: 30px; text-align: center;">
+                    <i class="fas fa-qrcode" style="font-size: 60px; opacity: 0.1;"></i>
+                    <div style="font-size: 7px; color: #94a3b8; margin-top: 10px; text-transform: uppercase;">Digital Signature Verified</div>
+                </div>
             </div>
         </div>
 
-        <div class="signature-section">
-            <div class="sig-box">
-                <div class="sig-line">Customer Signature</div>
-                <div style="font-size: 8px; text-align: center; color: #94a3b8; margin-top: 4px;">I accept the terms & conditions mentioned below.</div>
-            </div>
+        <div class="signature-grid">
+            <div class="sig-box"><div class="sig-line">Customer Acknowledgment</div></div>
             <div class="sig-box">
                 <div class="sig-line">For, {{ booking.company.name }}</div>
-                <div style="font-size: 8px; text-align: center; color: #94a3b8; margin-top: 4px;">Authorized Signatory & Stamp</div>
+                <div style="font-size: 8px; text-align: center; color: #94a3b8; margin-top: 5px;">Authorized Signatory & Stamp</div>
             </div>
         </div>
 
-        <div class="terms-text">
-            <strong>OFFICIAL TERMS:</strong> 1. Rates are subject to foreign exchange fluctuations at the time of final payment. 2. Cancellation charges apply as per Saudi Ministry guidelines. 3. Passports must have at least 6 months validity. 4. Disputes are subject to Ahmedabad jurisdiction only. 5. This is a computer-generated receipt and requires a physical stamp to be legally binding for visa purposes.
+        <div class="terms-box">
+            <strong>OFFICIAL TERMS:</strong> 1. Payments are subject to clearance. 2. Cancellation as per Saudi/Airline norms. 3. Disputes under Ahmedabad jurisdiction. 4. Due Date: {{ booking.final_payment_due_date|date:"d-m-Y"|default:"TBA" }}.
         </div>
     </div>
 
