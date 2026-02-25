@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ user.profile.company.name|default:"Vanguard" }} | {% block title %}{% endblock %}</title>
+    <title>{{ user.profile.company.name|default:"kakiwala" }} | {% block title %}{% endblock %}</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -107,14 +107,87 @@
 
         #pulse-dot { width: 8px; height: 8px; background: #34c759; border-radius: 50%; box-shadow: 0 0 8px #34c759; }
 
-        .hero-section {
-            background: #000; padding: 60px; border-radius: 34px;
-            margin-bottom: 40px; color: white; position: relative;
-            overflow: hidden; display: flex; align-items: center;
-        }
+      .hero-section {
+        background: #000;
+        background: radial-gradient(circle at top right, rgba(110, 111, 175, 0.15), transparent), 
+                    radial-gradient(circle at bottom left, rgba(197, 160, 89, 0.05), transparent),
+                    #0a0a0b;
+        padding: 80px 60px;
+        border-radius: 40px;
+        margin-bottom: 40px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    }
 
-        .hero-content h1 { font-size: 3.5rem; font-weight: 800; letter-spacing: -3px; margin: 0; line-height: 1; }
+    /* Floating Abstract Element */
+    .hero-orb {
+        position: absolute;
+        right: -100px;
+        top: -100px;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(110, 111, 175, 0.2) 0%, transparent 70%);
+        filter: blur(60px);
+        animation: orbFloat 10s infinite alternate ease-in-out;
+    }
 
+    @keyframes orbFloat {
+        from { transform: translate(0, 0); }
+        to { transform: translate(-30px, 30px); }
+    }
+
+    /* Typography Upgrades */
+    .hero-content { position: relative; z-index: 2; }
+    
+    .hero-content h1 { 
+        font-size: 4.5rem; 
+        font-weight: 800; 
+        letter-spacing: -4px; 
+        margin: 0; 
+        line-height: 0.95;
+        background: linear-gradient(to bottom, #ffffff 0%, #a1a1a6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-tagline {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        padding: 6px 14px;
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #6e6faf;
+        margin-bottom: 25px;
+    }
+
+    .hero-icon-3d {
+        position: absolute;
+        right: 60px;
+        font-size: 15rem;
+        color: #fff;
+        opacity: 0.05;
+        transform: rotate(-15deg);
+        filter: drop-shadow(0 0 20px rgba(110, 111, 175, 0.3));
+        pointer-events: none;
+    }
+
+    @media (max-width: 1024px) {
+        .hero-section { padding: 40px; }
+        .hero-content h1 { font-size: 3rem; letter-spacing: -2px; }
+        .hero-icon-3d { display: none; }
+    }
         /* --- Genuine Apple Toasts --- */
         .apple-toast {
             margin-bottom: 12px; min-width: 320px;
@@ -180,6 +253,7 @@
             <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="fas fa-house"></i> <span>Dashboard</span>
             </a>
+            
             <a href="{% url 'new_booking' %}" class="{% if request.resolver_match.url_name == 'new_booking' %}active{% endif %}">
                 <i class="fas fa-plus"></i> <span>New Entry</span>
             </a>
@@ -327,16 +401,35 @@
         </header>
 
         {% if request.resolver_match.url_name == 'dashboard' %}
-        <div class="hero-section">
-            <i class="fas fa-globe-asia" style="position: absolute; right: -50px; bottom: -50px; font-size: 20rem; opacity: 0.1;"></i>
-            <div class="hero-content">
-                <div style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; letter-spacing: 2px; color: #fff; opacity: 0.6; margin-bottom: 15px;">System Operational</div>
-                <h1>{{ user.profile.company.name|default:"Vanguard" }}<span style="color: #6e6faf;">.</span></h1>
-                <p style="font-size: 1.25rem; color: #86868b; margin-top: 20px; max-width: 500px; line-height: 1.4;">
-                    Centralized logistics hub for international tour operations in Ahmedabad.
-                </p>
+      <div class="hero-section">
+    <div class="hero-orb"></div>
+    <i class="fas fa-paper-plane hero-icon-3d"></i>
+    
+    <div class="hero-content">
+        <div class="hero-tagline">
+            <span id="pulse-dot" style="width: 6px; height: 6px; box-shadow: 0 0 10px #34c759;"></span>
+            Enterprise Cloud Node
+        </div>
+        
+        <h1>{{ user.profile.company.name|default:"Kakiwala " }}<span style="color: #6e6faf;">.</span></h1>
+        
+        <p style="font-size: 1.25rem; color: #86868b; margin-top: 25px; max-width: 550px; line-height: 1.5; font-weight: 500;">
+            The ultimate logistics command center for 
+            <span style="color: #fff;">international pilgrimage</span> and luxury tour operations in Ahmedabad.
+        </p>
+
+        <div style="display: flex; gap: 15px; margin-top: 35px;">
+            <div style="padding: 12px 20px; background: rgba(255,255,255,0.05); border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.6rem; font-weight: 800; color: #86868b; text-transform: uppercase;">Active Groups</div>
+                <div style="font-size: 1.2rem; font-weight: 700;">14</div>
+            </div>
+            <div style="padding: 12px 20px; background: rgba(255,255,255,0.05); border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.6rem; font-weight: 800; color: #86868b; text-transform: uppercase;">Node Status</div>
+                <div style="font-size: 1.2rem; font-weight: 700; color: #34c759;">Optimal</div>
             </div>
         </div>
+    </div>
+</div>
         {% endif %}
         {% endif %}
 
